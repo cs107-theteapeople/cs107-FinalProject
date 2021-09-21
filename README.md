@@ -1,2 +1,6 @@
-# cs107-FinalProject
-Final repository for AC207 project
+Group Number 19
+
+David Berthiaume
+Lily Qian
+Angel Hsu
+Maggie Wu
