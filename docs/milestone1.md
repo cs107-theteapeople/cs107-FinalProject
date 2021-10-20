@@ -116,7 +116,7 @@ This will return the roots of the supplied function using Newton’s method.
 ## Software Organization
 #### Summary
 
-For our code structure, we follow the recommendations from the blog post by Jp Calderone found at https://jcalderone.livejournal.com/39794.html to structure a python project.  He recommends not using a ‘src’ directory, and placing tests within each module along with an appropriate __init__.py file.  Similarly, we also follow the second recommendations provided by https://docs.pytest.org/en/stable/goodpractices.html to place the tests within each module (in a ‘test’ subdirectory).  This structure is useful if we have a direct relation between tests and application modules and want to distribute them along with your application.
+For our code structure, we follow the recommendations from the blog post by Jp Calderone[3] to structure a python project.  He recommends not using a ‘src’ directory, and placing tests within each module along with an appropriate __init__.py file.  Similarly, we also follow the second recommendations provided by https://docs.pytest.org/en/stable/goodpractices.html to place the tests within each module (in a ‘test’ subdirectory).  This structure is useful if we have a direct relation between tests and application modules and want to distribute them along with your application.
 
 Our project directory structure will be of the following form:  
 
@@ -203,6 +203,6 @@ After much consideration, we have settled on using the gnu GPLv3 license as it h
 
 2. Kathuria, A. (2019, June 3). Getting started with Pytorch Part 1: Understanding how automatic differentiation works. Medium. Retrieved October 20, 2021, from https://towardsdatascience.com/getting-started-with-pytorch-part-1-understanding-how-automatic-differentiation-works-5008282073ec. 
 
-3. J. C. (jcalderone), 16:58:00, 2007-12-21, Jp Calderone jcalderone    2007-12-21 16:58:00, &amp; jcalderone, J. C. (2007, December 21). Filesystem structure of a python project. jcalderone. Retrieved October 20, 2021, from https://jcalderone.livejournal.com/39794.html. 
+3. Jp Calderone, 16:58:00, 2007-12-21, Filesystem structure of a python project. jcalderone. Retrieved October 20, 2021, from https://jcalderone.livejournal.com/39794.html. 
 
-4. Good integration practices¶. Good Integration Practices - pytest documentation. (n.d.). Retrieved October 20, 2021, from https://docs.pytest.org/en/6.2.x/goodpractices.html. 
+4. Good Integration Practices - pytest documentation. (n.d.). Retrieved October 20, 2021, from https://docs.pytest.org/en/6.2.x/goodpractices.html. 
