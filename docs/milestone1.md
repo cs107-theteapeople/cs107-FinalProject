@@ -9,17 +9,17 @@
 ## Introduction
 
 
-Automatic differentiation, also known as algorithmic differentiation, involves efficiently and accurately evaluating derivatives of numeric functions from a computational perspective. In an era of rapidly advancing technology, automatic differentiation has many broad applications, especially in artificial intelligence, allowing many computations to be performed efficiently, greatly expanding the scope and coverage of artificial intelligence to widely different applications to enhance human lives. While artificial intelligence is certainly a widely known application of automatic differentiation with immense potential for further expanded applications, the significance of automatic differentiation also derives from its potential applications in computational fluid dynamics, atmospheric sciences, and engineering design and optimization.
+Automatic differentiation, also known as algorithmic differentiation, involves efficiently and accurately evaluating derivatives of numeric functions from a computational perspective. In an era of rapidly advancing technology, automatic differentiation has many broad applications, especially in artificial intelligence, allowing many computations to be performed efficiently and greatly expanding the scope and coverage of artificial intelligence to widely different applications to enhance human lives. While artificial intelligence is certainly a widely known application of automatic differentiation with immense potential for further expanded applications, the significance of automatic differentiation also derives from its potential applications in computational fluid dynamics, atmospheric sciences, and engineering design and optimization.
 
-Root finding is an algorithm used to find the zeroes or roots of a continuous function.  Often, solving for the roots of a function analytically is not possible (except in simple cases such as lower degree polynomials).  Iterative methods are used instead.  One highly efficient method is Newton’s method which requires exact forms or approximations of the derivative of the function.
+Root finding is an algorithm used to find the zeroes or roots of a continuous function.  Often, solving for the roots of a function analytically is not possible (except in certain simple cases such as lower degree polynomials).  Iterative methods are used instead.  One highly efficient method is Newton’s method which requires exact forms or approximations of the derivative of the function.
 
 This software package provides two libraries:
 1. Autodiff provides an easy-to-use library that performs automatic differentiation of a user supplied function.
-2. Rootfinder uses autodiff to find the roots for continuous functions.
+2. Rootfinder uses autodiff to find the roots for continuous functions using Newton's method.
 
 ## Background
 
-As opposed to other methods for computing derivatives in computer programs, such as manually calculating derivatives (and then coding them), numerical differentiation (finite difference approximations), symbolic differentiation (expression manipulation in computer algebra systems), automatic differentiation presents an elegant solution to allow for accurate, efficient differentiation even when involving complex operations, which the aforementioned methods tend to handle less well.
+As opposed to other methods for computing derivatives in computer programs, such as manually calculating derivatives (and then hard-coding them), numerical differentiation (finite difference approximations), symbolic differentiation (expression manipulation in computer algebra systems), automatic differentiation presents an elegant solution to allow for accurate, efficient differentiation even when involving complex operations, which the aforementioned methods tend to handle less well.
 
 To provide a brief mathematical background, automatic differentiation involves utilizing the chain rule repeatedly. This allows us to compute the derivative of a composite function. The specification of which is included below[1]:
 
@@ -29,7 +29,7 @@ Rather than producing an expression for a derivative, automatic differentiation 
 
 There are two main versions of automatic differentiation: forward mode and reverse mode. In simple terms, forward mode applies the chain rule to basic operations in a forward primal trace, obtaining a derivative trace. Conversely, reverse mode does not compute derivatives simultaneously but requires two separate phases: forward and backward. During the forward phase, all intermediate variables are evaluated, and their values are stored in memory. Afterwards, during the backward phase, the derivatives are propagated backwards using the chain rule. This is also known as backpropagation.
 
-In a simple example model where[1]:
+In a simple example model where[2]:
  
 ![](p2.png)
 
@@ -44,15 +44,9 @@ In applying the chain rule to our computation graph, we obtain the following[2]:
 
 ## How to Use Autodiff
 
-A user will interact with the automatic differentiation functionality through the autodiff module.  This module uses the automatic differentiation algorithm to calculate the Jacobian of a user supplied function. 
+A user will interact with the automatic differentiation functionality through the autodiff module.  This module uses automatic differentiation to calculate the Jacobian of a user supplied function. 
 
-We will enable users to be able to install the package directly from the repository using pip. For example:
-
-```
-pip install git+https://github.com/cs107-theteapeople/autodiff.git
-```
-
-Or you can use git clone to install the package:
+To install the package you can use git clone:
 
 ```
 git clone https://github.com/cs107-theteapeople/autodiff.git 
@@ -76,7 +70,7 @@ Set user-defined function:
 func = ad.const (0.4) * ad.sin( ad.var(x) * ad.var(y) )
 ```
 
-For higher dimensional functions where named variables will become unwieldy, we will supply methods to allow a user to conveniently create and supply arrays of input variables.
+Note that wherever possible, we will use operator overloading to implicity convert constants wherever possible, so the user doesn't have to type ad.const( 0.4 ).  For higher dimensional functions where named variables will become unwieldy, we will supply methods to allow a user to conveniently create and supply arrays of input variables.
   
 Instantiate the object:
 ```
@@ -87,7 +81,7 @@ Evaluate the derivative:
 ad1.differentiate(x = 2, y = 3)
 ```
 
-This will return the derivate of this function with respect to x and with respect to y.
+This will return the derivative of this function with respect to x and with respect to y.  We will also provide options to allow users to specify arrays of input values by providing numpy arrays as inputs.
 
 
 ## How to Use Rootfinder
@@ -128,18 +122,18 @@ We will include two modules.
 
 The first module, autodiff, will contain the functionality to perform automated differentiation.  
 
-The second module, rootfinder, is an application that uses autodiff to find the roots of a function using Newton’s method.  Here being able to find the derivative of a function via autodiff is needed to use Newton’s method.
+The second module, rootfinder, is an application that uses autodiff to find the roots of a function using Newton’s method.  Here being able to find the derivative of a function with autodiff is needed to use Newton’s method, so rootfinder directly depends on autodiff.
 
 #### Where will our test suite live?
 
 Per the recommendations above, our test suites (using pytest) will live within each module, autodiff, and rootfinder.  We will be using travis ci and codecov to monitor our test statuses and codecov to monitor our test coverage.
 
 #### How will you distribute your package (e.g. PyPI)?
-Using Pip’s version control support, we will provide the ability to install the software directly through the git repository.  Instructions to do so will be provided in the documentation and the root readme file.
+Since this project only consists of python sources and doesn't need any files to be built, installation will be done by simply cloning the repository as described above.  We encourage users to play around with the code and even submit pull requests.  Our focus will be on code readability and learning, and we hope to make the code as understandable as possible so that users will be encouraged to modify the code and try new techniques.
 
 #### How will you package your software? Will you use a framework? If so, which one and why? If not, why not?
 
-Our project will only consist of python sources and a few common dependencies.  We will have no compiler requirements or binary files.  We will be using a source distribution for our project.  We will be using sdist to do this.
+Our project will only consist of python sources and a few common dependencies.  We will have no compiler requirements or binary files.  Our initial plan is to not use any packaging framework.  We will be providing a requirements.txt file to allow a user to install the needed library requirements.  We will provide clear documentation on how to install these requirements.
 
 #### Other considerations?
 
@@ -149,7 +143,7 @@ Since we will be developing an application for our extension, we will speak with
 ## Implementation 
 ### Module methods
 
-A critical component of the **autodiff** module is the ability to define functions and input variables.  We use a model similar to sympy.  As mentioned in the ‘how to use autodiff’ section of this document, variables, constants, and elementary functions will be defined in the autodiff module and these can be combined to make more complex functions.  We make heavy use of operator overloading and implicit conversions to allow users to conveniently define their functions.  
+A critical component of the **autodiff** module is the ability to define functions and input variables.  We use a model similar to sympy.  As mentioned in the ‘how to use autodiff’ section of this document, variables, constants, and elementary functions will be defined in the autodiff module and these can be combined to make composite functions.  We make heavy use of operator overloading and implicit conversions to allow users to conveniently define their functions.  
 
 Here are some example ways for a user to define a function object.  
 
@@ -161,7 +155,7 @@ func1 = x1 + x2
 func2 = ad.cos( x1 * x2 ) 
 func3 = ad.sin( x1) + ad.cos(x2) * 4.0   (* 4.0 uses an implicit cast from python literal to autodiff constant object for convenience)
 func4 = x1 ** 6  (operator overloading allows us to convert the 6 to a autodiff constant)
-func5 = [x1 * x2, x1 + x2] Functions with multiple outputs can be defined through lists.
+func5 = [x1 * x2, x1 + x2] (functions with multiple outputs can be defined through lists)
 ```
 
 ### AutoDiff class
@@ -171,11 +165,11 @@ Once functions are defined, an AutoDiff object can be instantiated to evaluate t
 ```
 adiff = ad.AutoDiff( func2 )
 ```
-where func2 is an autodiff function or a list of autodiff functions (for functions that have multiple outputs).  This class automatically determines the inputs and the number of outputs from the function definition.  This is used for validation when a user requests the function to be evaluated for the derivatives to be computed.  
+where func2 is an autodiff function or a list of autodiff functions (for functions that have multiple outputs).  This class automatically determines the inputs and the number of outputs from the function definition.  This is used for validation when a user requests the derivatives to be computed.  
 
-Once this object is instantiated, a computation graph is created and stored as a dictionary of variables, elementary functions, and pointers to children.   This graph is traversed when the derivative is calculated.
+Once this object is instantiated, a computation graph is created and stored as a dictionary of variables, elementary functions, and pointers to children.   This graph is traversed when the derivative is calculated.  During graph traversal we compute the necessary traces similar to how we have done this in class and store these traces in python lists.  We will not be using dual numbers for our implementation.
 
-For this project, a core data structure that we will use is dictionaries both the store our variables (with our keys being the names of the variables) and to store our computation graph.  Even though dictionaries are not the most efficient way to store this data, we would like to focus on readability, software design, code readability, maintainability, and learning over efficiency for this project.
+For this project, a core data structure that we will use is dictionaries both the store our variables (with our keys being the names of the variables) and to store our computation graph.  Even though dictionaries are not the most efficient way to store this data, we would like to focus on software design, code readability, maintainability, and learning over efficiency for this project (see our mission statement below).  
 
 This class provides one key method to calculate derivatives.  
 
@@ -183,19 +177,22 @@ This class provides one key method to calculate derivatives.
 adiff.differentiate( x1 = 4.0, x2 = 2.0 )
 ```
 
-Inputs are entered as keyword arguments or a dictionary.  We match these inputs with the expected variables from the function that was used when instantiating the object.  If there is a mismatch in variables and expected inputs, we raise an appropriate error.  
+Inputs are entered as keyword arguments or a dictionary.  We match these inputs with the expected variables from the function that was used when instantiating the object.  If there is a mismatch in variables and expected inputs, we raise an appropriate error.  For array inputs, we will check to make sure the array sizes match the expected inputs as defined in the function.
 
-Once this is called, the computation graph (created on object instantiation) is used to evaluate the function at the supplied points, and then compute the derivate at these points using forward mode automatic differentiation.  We do not plan on using dual numbers for this project as we feel that doing so will potentially reduce code readability and understanding.  As we perform the forward and tangent traces, we will be storing these intermediate results in a list of lists.
+Once this function is called, the computation graph (created on object instantiation) is used to evaluate the function at the supplied points, and then compute the derivative at these points using forward mode automatic differentiation.  We do not plan to use dual numbers for this project as we feel that doing so will potentially reduce code readability and understanding.  As we perform the forward and tangent traces, we will be storing these intermediate results in simple Python lists.
 
-For functions with multiple inputs and outputs, we will allow users to specify which derivatives they would like to compute.  By default, we will compute all derivatives and return the Jacobian.  
+For functions with multiple inputs and/or outputs, we will allow users to specify which derivatives they would like to compute.  By default, we will compute all derivatives and return the Jacobian.  
 
 ### External Dependencies
 
-We would borrow from external dependencies such as numpy and potentially a graph plotting library for viewing the computatiion graphs. For efficient computation, we will be relying heavily on numpy to carry out the elementary function operations within each defined elementary function in autodiff; for example, for the primal trace  and its corresponding tangent trace , we would use np.sin() and np.cos() to carry out the operations respectively.  For efficiency we may consider using the numba library for some of our core algorithms if this doesn’t reduce code readability and understanding.
+We would borrow from external dependencies such as numpy and potentially a graph plotting library for viewing the computation graphs. For efficient computation, we will be relying heavily on numpy to carry out the elementary function operations within each defined elementary function in autodiff; for example, for the primal trace and its corresponding tangent trace for ad.sin(), we would use np.sin() and np.cos() to carry out the operations respectively.  For efficiency we may consider using the numba library as an optional dependency for some of our core algorithms if this doesn’t reduce code readability and understanding.  We are considering storing a map of primitive functions and their corresponding derivatives in a separate text file rather than hard-coding them.
 
 ## License:
 
 After much consideration, we have settled on using the gnu GPLv3 license as it has allows one to do almost anything they want with the code **except** distributing closed-source versions.  Given the academic nature of this project, we feel it is best that close-source versions are not allowed.  The main purpose of this code is for people to learn from it, and we feel that having the freedom to view and modify code is a critical part of this.  
+
+## Mission Statement:
+Our goal with this project is to provide an automatic differentiation and rootfinder library that is easy to understand, read, and modify.  We wish to provide potential users with an easy-to-understand code that they can learn from.  We encourage users to modify the code and experiment with various techniques.
 
 ## References:
 
