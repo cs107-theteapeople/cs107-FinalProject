@@ -21,7 +21,7 @@ This software package provides two libraries:
 
 As opposed to other methods for computing derivatives in computer programs, such as manually calculating derivatives (and then coding them), numerical differentiation (finite difference approximations), symbolic differentiation (expression manipulation in computer algebra systems), automatic differentiation presents an elegant solution to allow for accurate, efficient differentiation even when involving complex operations, which the aforementioned methods tend to handle less well.
 
-To provide a brief mathematical background, automatic differentiation involves utilizing the chain rule repeatedly. This allows us to compute the derivative of a composite function. The specification of which is included below:
+To provide a brief mathematical background, automatic differentiation involves utilizing the chain rule repeatedly. This allows us to compute the derivative of a composite function. The specification of which is included below[1]:
 
 ![](p1.png)
 
@@ -37,7 +37,7 @@ The graph structure of calculations, or the computation graph, would look like t
 
 ![](p3.png)
 
-In applying the chain rule to our computation graph, we obtain the following:
+In applying the chain rule to our computation graph, we obtain the following[2]:
 
 ![](p4.png)
 
