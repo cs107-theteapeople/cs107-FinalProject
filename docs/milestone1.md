@@ -120,29 +120,7 @@ For our code structure, we follow the recommendations from the blog post by Jp C
 
 Our project directory structure will be of the following form:  
 
-cs107-finalproject/
-| 
-| -- autodiff/
-| -- | -- __init__.py
-| -- | -- autodiff.py 
-| -- | -- <other autodiff python implementation files>
-| -- | -- test/
-| -- | -- |  __init__.py
-| -- | -- |  <pytest tests for the autodiff module>
-|
-| -- rootfinder/
-| -- | -- __init__.py
-| -- | -- rootfinder.py 
-| -- | -- <other rootfinder python implementation files>
-| -- | -- test/
-| -- | -- |  __init__.py
-| -- | -- |  <pytest tests for the rootfinder module>
-| -- setup.py
-| -- README.md
-| -- requirements.txt
-| -- LICENSE
-| -- .travis.yml
-| -- codecov.yml
+![](p5.png)
 
 #### What modules do you plan on including? What is their basic functionality?
 
@@ -223,4 +201,4 @@ After much consideration, we have settled on using the gnu GPLv3 license as it h
 
 1. Lange, R. (2019, September 2). Forward mode automatic differentiation &amp; dual numbers. Medium. Retrieved October 20, 2021, from https://towardsdatascience.com/forward-mode-automatic-differentiation-dual-numbers-8f47351064bf. 
 
-2. 
+2. Kathuria, A. (2019, June 3). Getting started with Pytorch Part 1: Understanding how automatic differentiation works. Medium. Retrieved October 20, 2021, from https://towardsdatascience.com/getting-started-with-pytorch-part-1-understanding-how-automatic-differentiation-works-5008282073ec. 
