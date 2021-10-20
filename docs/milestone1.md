@@ -202,3 +202,7 @@ After much consideration, we have settled on using the gnu GPLv3 license as it h
 1. Lange, R. (2019, September 2). Forward mode automatic differentiation &amp; dual numbers. Medium. Retrieved October 20, 2021, from https://towardsdatascience.com/forward-mode-automatic-differentiation-dual-numbers-8f47351064bf. 
 
 2. Kathuria, A. (2019, June 3). Getting started with Pytorch Part 1: Understanding how automatic differentiation works. Medium. Retrieved October 20, 2021, from https://towardsdatascience.com/getting-started-with-pytorch-part-1-understanding-how-automatic-differentiation-works-5008282073ec. 
+
+3. J. C. (jcalderone), 16:58:00, 2007-12-21, Jp Calderone jcalderone    2007-12-21 16:58:00, &amp; jcalderone, J. C. (2007, December 21). Filesystem structure of a python project. jcalderone. Retrieved October 20, 2021, from https://jcalderone.livejournal.com/39794.html. 
+
+4. Good integration practices¶. Good Integration Practices - pytest documentation. (n.d.). Retrieved October 20, 2021, from https://docs.pytest.org/en/6.2.x/goodpractices.html. 
