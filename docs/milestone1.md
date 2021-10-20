@@ -29,11 +29,11 @@ Rather than producing an expression for a derivative, automatic differentiation 
 
 There are two main versions of automatic differentiation: forward mode and reverse mode. In simple terms, forward mode applies the chain rule to basic operations in a forward primal trace, obtaining a derivative trace. Conversely, reverse mode does not compute derivatives simultaneously but requires two separate phases: forward and backward. During the forward phase, all intermediate variables are evaluated, and their values are stored in memory. Afterwards, during the backward phase, the derivatives are propagated backwards using the chain rule. This is also known as backpropagation.
 
-In a simple example model where$^1$:
+In a simple example model where[1]:
  
 ![](p2.png)
 
-The graph structure of calculations, or the computation graph, would look like the below$^2$: 
+The graph structure of calculations, or the computation graph, would look like the below[2]: 
 
 ![](p3.png)
 
