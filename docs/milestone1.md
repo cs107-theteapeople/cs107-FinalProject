@@ -60,9 +60,9 @@ git clone https://github.com/cs107-theteapeople/autodiff.git
 
 The general structure of usage will be as follows:
 
-*A user will define a function by combining variables, constants, and primitive functions through various operations.  
-*A user will instantiate an AutoDiff object with the supplied function.
-*The differentiate member function of the AutoDiff object will then be used to calculate the desired derivatives for specific input points.
+* A user will define a function by combining variables, constants, and primitive functions through various operations.  
+* A user will instantiate an AutoDiff object with the supplied function.
+* The differentiate member function of the AutoDiff object will then be used to calculate the desired derivatives for specific input points.
 
 It is important to note that the details of our implementation and usage patterns may change as we progress further into the project.
 
