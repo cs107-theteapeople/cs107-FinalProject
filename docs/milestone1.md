@@ -67,12 +67,12 @@ import autodiff as ad
 ```
 Set user-defined function:
 ```
-func = ad.const (0.4) * ad.sin( ad.var(x) * ad.var(y) )
+func = 0.3 * ad.sin( ad.var('x') * ad.var('y') )
 ```
 
-Note that wherever possible, we will use operator overloading to implicity convert constants wherever possible, so the user doesn't have to type ad.const( 0.4 ).  For higher dimensional functions where named variables will become unwieldy, we will supply methods to allow a user to conveniently create and supply arrays of input variables.
+For higher dimensional functions where named variables will become unwieldy, we will supply methods to allow a user to conveniently create and supply arrays of input variables.
   
-Instantiate the object:
+Instantiate the AutoDiff object:
 ```
 ad1 = ad.AutoDiff(func)
 ```
@@ -97,7 +97,7 @@ import rootfinder as rf
 
 Create our function:
 ```
-func = ad.sin( ad.var(x) ) * ad.cos( ad.var(x)**2 + 1.2)
+func = ad.sin( ad.var(x) ) * ad.cos(1.2) - 2.0
 ```
 
 Find the roots of our function:
@@ -143,9 +143,13 @@ Since we will be developing an application for our extension, we will speak with
 ## Implementation 
 ### Module methods
 
-A critical component of the **autodiff** module is the ability to define functions and input variables.  We use a model similar to sympy.  As mentioned in the ‘how to use autodiff’ section of this document, variables, constants, and elementary functions will be defined in the autodiff module and these can be combined to make composite functions.  We make heavy use of operator overloading and implicit conversions to allow users to conveniently define their functions.  
+A critical component of the **autodiff** module is the ability to define functions and input variables.  We use a model similar to sympy.  As mentioned in the ‘how to use autodiff’ section of this document, elementary functions will be defined in the autodiff module and these can be combined to make composite functions.  We make heavy use of operator overloading and implicit conversions to allow users to conveniently define their functions.  
 
-Here are some example ways for a user to define a function object.  
+### Function class
+
+Our main class for building composite functions will be the Function class.  This will use operator overloading heavily to allow the user to build up composite functions.  The forward computation graph will be generated as the composite function is built (taking advantage of the Python parser and order of operations).  The utility function ad.var(<name>) is used to build a primitive function that is just a single input variable.  These variables have names associated with them.  Composite functions are built by combining these variables with operators and primitive functions.  We will likely be using python dictionaries to store the computation graph as a series of nodes and their children along with their operations.  
+
+Here are some example ways for a user to define a composite function (an instance of the Function class, or a list of instances).  
 
 ```
 import autodiff as ad
@@ -153,21 +157,21 @@ x1 = ad.var(‘x1’)
 x2 = ad.var(‘x2’)
 func1 = x1 + x2
 func2 = ad.cos( x1 * x2 ) 
-func3 = ad.sin( x1) + ad.cos(x2) * 4.0   (* 4.0 uses an implicit cast from python literal to autodiff constant object for convenience)
-func4 = x1 ** 6  (operator overloading allows us to convert the 6 to a autodiff constant)
+func3 = ad.sin( x1 ) + ad.cos( x2 ) * 4.0 
+func4 = x1 ** 6  (operator overloading allows us to handle raising powers to reals or integers)
 func5 = [x1 * x2, x1 + x2] (functions with multiple outputs can be defined through lists)
 ```
 
 ### AutoDiff class
 
-Once functions are defined, an AutoDiff object can be instantiated to evaluate the function for various inputs and then compute the derivatives.  
+Once functions are defined, an AutoDiff object can be instantiated to evaluate the function for various inputs and compute the derivatives.  
 
 ```
 adiff = ad.AutoDiff( func2 )
 ```
 where func2 is an autodiff function or a list of autodiff functions (for functions that have multiple outputs).  This class automatically determines the inputs and the number of outputs from the function definition.  This is used for validation when a user requests the derivatives to be computed.  
 
-Once this object is instantiated, a computation graph is created and stored as a dictionary of variables, elementary functions, and pointers to children.   This graph is traversed when the derivative is calculated.  During graph traversal we compute the necessary traces similar to how we have done this in class and store these traces in python lists.  We will not be using dual numbers for our implementation.
+Once this object is instantiated, the function's computation graph is traversed and the derivative is calculated.  During graph traversal we compute the necessary traces similar to how we have done this in class and store these traces in python lists.  We will not be using dual numbers for our implementation.
 
 For this project, a core data structure that we will use is dictionaries both the store our variables (with our keys being the names of the variables) and to store our computation graph.  Even though dictionaries are not the most efficient way to store this data, we would like to focus on software design, code readability, maintainability, and learning over efficiency for this project (see our mission statement below).  
 
@@ -179,13 +183,13 @@ adiff.differentiate( x1 = 4.0, x2 = 2.0 )
 
 Inputs are entered as keyword arguments or a dictionary.  We match these inputs with the expected variables from the function that was used when instantiating the object.  If there is a mismatch in variables and expected inputs, we raise an appropriate error.  For array inputs, we will check to make sure the array sizes match the expected inputs as defined in the function.
 
-Once this function is called, the computation graph (created on object instantiation) is used to evaluate the function at the supplied points, and then compute the derivative at these points using forward mode automatic differentiation.  We do not plan to use dual numbers for this project as we feel that doing so will potentially reduce code readability and understanding.  As we perform the forward and tangent traces, we will be storing these intermediate results in simple Python lists.
+Once this function is called, the computation graph (created during function object instantiation) is used to evaluate the function at the supplied points, and then compute the derivative at these points using forward mode automatic differentiation.  We do not plan to use dual numbers for this project as we feel that doing so will potentially reduce code readability and understanding.  As we perform the forward and tangent traces, we will be storing these intermediate results in simple Python lists.
 
 For functions with multiple inputs and/or outputs, we will allow users to specify which derivatives they would like to compute.  By default, we will compute all derivatives and return the Jacobian.  
 
 ### External Dependencies
 
-We would borrow from external dependencies such as numpy and potentially a graph plotting library for viewing the computation graphs. For efficient computation, we will be relying heavily on numpy to carry out the elementary function operations within each defined elementary function in autodiff; for example, for the primal trace and its corresponding tangent trace for ad.sin(), we would use np.sin() and np.cos() to carry out the operations respectively.  For efficiency we may consider using the numba library as an optional dependency for some of our core algorithms if this doesn’t reduce code readability and understanding.  We are considering storing a map of primitive functions and their corresponding derivatives in a separate text file rather than hard-coding them.
+We would borrow from external dependencies such as numpy and potentially a graph plotting library for viewing the computation graphs. For efficient computation, we will be relying heavily on numpy to carry out the elementary function operations within each defined elementary function in autodiff; for example, for the primal trace and its corresponding tangent trace for ad.sin(), we would use np.sin() and np.cos() to carry out the operations respectively.  For efficiency, we may consider using the [numba](https://numba.pydata.org/) library as an optional dependency for some of our core algorithms if this doesn’t reduce code readability and understanding.  We are also considering storing a map of primitive functions and their corresponding derivatives in a separate text file rather than hard-coding them.
 
 ## License:
 
