@@ -29,18 +29,19 @@ Rather than producing an expression for a derivative, automatic differentiation 
 
 There are two main versions of automatic differentiation: forward mode and reverse mode. In simple terms, forward mode applies the chain rule to basic operations in a forward primal trace, obtaining a derivative trace. Conversely, reverse mode does not compute derivatives simultaneously but requires two separate phases: forward and backward. During the forward phase, all intermediate variables are evaluated, and their values are stored in memory. Afterwards, during the backward phase, the derivatives are propagated backwards using the chain rule. This is also known as backpropagation.
 
-In a simple example model where[2]:
- 
-![](p2.png)
+In this project, we will be using forward mode. Forward mode is probably best understood through a simple example.  Consider the following simple polynomial with two inputs x1, x2, and one output:
 
-The graph structure of calculations, or the computation graph, would look like the below[2]: 
+![](p6.png).
 
-![](p3.png)
+The computation graph for this polynomial looks like the following (this was rendered using the wonderful Auto-eD tool [2]). 
 
-In applying the chain rule to our computation graph, we obtain the following[2]:
+![](p7.png)
 
-![](p4.png)
+To compute the derivative with respect to x0 and x1 we follow the computation graph and compute the intermediate derivatives along the way using the chain rule mentioned above.  The following table show how the derivates with respect to x0 and x1 evaluated at x0 = 2 and x1 = 3 are computed.
 
+![](p8.png)
+
+In the 'Derivative' column, we are computing the derivative of the elementary operation in the 'Operation' column and then evaluating it at the given numeric values.  By repeating this along the computation graph, we end up with our final derivatives.  Our library for this project will be using the same approach.
 
 ## How to Use Autodiff
 
@@ -49,8 +50,9 @@ A user will interact with the automatic differentiation functionality through th
 To install the package you can use git clone:
 
 ```
-git clone https://github.com/cs107-theteapeople/autodiff.git 
+git clone https://github.com/cs107-theteapeople/cs107-FinalProject.git 
 ```
+If allowed and supported for this project, we will also use PyPi to allow a user to install the library with pip. (We don't want to put something on PyPi that may not be suitable.)
 
 The general structure of usage will be as follows:
 
@@ -81,7 +83,7 @@ Evaluate the derivative:
 ad1.differentiate(x = 2, y = 3)
 ```
 
-This will return the derivative of this function with respect to x and with respect to y.  We will also provide options to allow users to specify arrays of input values by providing numpy arrays as inputs.
+This will return the derivative of this function with respect to x and with respect to y evaluated at the given points as a numpy array or scalar value.  We will also provide options to allow users to specify arrays of input values by providing numpy arrays as inputs.
 
 
 ## How to Use Rootfinder
@@ -105,12 +107,12 @@ Find the roots of our function:
 rf.findroots(func)
 ```
 
-This will return the roots of the supplied function using Newton’s method.
+This will return the roots of the supplied function using Newton’s method as a numpy array or scalar value.
 
 ## Software Organization
 #### Summary
 
-For our code structure, we follow the recommendations from the blog post by Jp Calderone[3] to structure a python project.  He recommends not using a ‘src’ directory, and placing tests within each module along with an appropriate __init__.py file.  Similarly, we also follow the second recommendations provided by https://docs.pytest.org/en/stable/goodpractices.html to place the tests within each module (in a ‘test’ subdirectory).  This structure is useful if we have a direct relation between tests and application modules and want to distribute them along with your application.
+For our code structure, we considered following the recommendations from the blog post by Jp Calderone[3] to structure a python project.  He recommends not using a ‘src’ directory, and placing tests within each module along with an appropriate __init__.py file.  This structure is useful if we have a direct relation between tests and application modules and want to distribute them along with your application.  However, in class, it was suggested to not place our tests within our source modules.  For this project, we will follow the structure outlined in class.
 
 Our project directory structure will be of the following form:  
 
@@ -126,10 +128,10 @@ The second module, rootfinder, is an application that uses autodiff to find the 
 
 #### Where will our test suite live?
 
-Per the recommendations above, our test suites (using pytest) will live within each module, autodiff, and rootfinder.  We will be using travis ci and codecov to monitor our test statuses and codecov to monitor our test coverage.
+Per the recommendations from class, our test suites (using pytest) will live within a tests directory, inside autodiff and rootfinder subdirectories.  We will be using pytest along with travis ci and codecov to monitor our test statuses and codecov to monitor our test coverage.
 
 #### How will you distribute your package (e.g. PyPI)?
-Since this project only consists of python sources and doesn't need any files to be built, installation will be done by simply cloning the repository as described above.  We encourage users to play around with the code and even submit pull requests.  Our focus will be on code readability and learning, and we hope to make the code as understandable as possible so that users will be encouraged to modify the code and try new techniques.
+Since this project only consists of python sources and doesn't need any files to be built, installation could be done by simply cloning the repository as described above.  We encourage users to play around with the code and even submit pull requests.  Our focus will be on code readability and learning, and we hope to make the code as understandable as possible so that users will be encouraged to modify the code and try new techniques.  As mentioned above, if appropriate, we will host our project on PyPI and allow users to install the software with pip.  
 
 #### How will you package your software? Will you use a framework? If so, which one and why? If not, why not?
 
@@ -143,11 +145,11 @@ Since we will be developing an application for our extension, we will speak with
 ## Implementation 
 ### Module methods
 
-A critical component of the **autodiff** module is the ability to define functions and input variables.  We use a model similar to sympy.  As mentioned in the ‘how to use autodiff’ section of this document, elementary functions will be defined in the autodiff module and these can be combined to make composite functions.  We make heavy use of operator overloading and implicit conversions to allow users to conveniently define their functions.  
+A critical component of the **autodiff** module is the ability to define functions and input variables.  We use a model similar to sympy.  As mentioned in the ‘how to use autodiff’ section of this document, elementary functions will be defined in the autodiff module and these can be combined to make composite functions.  We make heavy use of operator overloading to allow users to conveniently define their functions.  Elementary functions will be Python functions within the autodiff module that generate simple Function instances which are described below.
 
 ### Function class
 
-Our main class for building composite functions will be the Function class.  This will use operator overloading heavily to allow the user to build up composite functions.  The forward computation graph will be generated as the composite function is built (taking advantage of the Python parser and order of operations).  The utility function ad.var(<name>) is used to build a primitive function that is just a single input variable.  These variables have names associated with them.  Composite functions are built by combining these variables with operators and primitive functions.  We will likely be using python dictionaries to store the computation graph as a series of nodes and their children along with their operations.  
+Our main class for building composite functions will be the Function class.  This will use operator overloading heavily to allow the user to build up composite functions.  The forward computation graph will be generated as the composite function is built (taking advantage of the Python parser and order of operations).  The utility function ad.var(<name>) is used to build a primitive function that is just a single input variable.  These variables have names associated with them.  Composite functions are built by combining these variables with operators and primitive functions (created using helper functions in the autodiff module).  We will likely be using python dictionaries to store the computation graph as a series of nodes and their children along with their operations.  
 
 Here are some example ways for a user to define a composite function (an instance of the Function class, or a list of instances).  
 
@@ -202,7 +204,7 @@ Our goal with this project is to provide an automatic differentiation and rootfi
 
 1. Lange, R. (2019, September 2). Forward mode automatic differentiation &amp; dual numbers. Medium. Retrieved October 20, 2021, from https://towardsdatascience.com/forward-mode-automatic-differentiation-dual-numbers-8f47351064bf. 
 
-2. Kathuria, A. (2019, June 3). Getting started with Pytorch Part 1: Understanding how automatic differentiation works. Medium. Retrieved October 20, 2021, from https://towardsdatascience.com/getting-started-with-pytorch-part-1-understanding-how-automatic-differentiation-works-5008282073ec. 
+2. Lindsey Brown, Rachel Moon, and David Sondak IACS Harvard, https://autoed.herokuapp.com/
 
 3. Jp Calderone, 16:58:00, 2007-12-21, Filesystem structure of a python project. jcalderone. Retrieved October 20, 2021, from https://jcalderone.livejournal.com/39794.html. 
 
