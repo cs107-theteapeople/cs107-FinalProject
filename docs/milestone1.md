@@ -209,3 +209,12 @@ Our goal with this project is to provide an automatic differentiation and rootfi
 3. Jp Calderone, 16:58:00, 2007-12-21, Filesystem structure of a python project. jcalderone. Retrieved October 20, 2021, from https://jcalderone.livejournal.com/39794.html. 
 
 4. Good Integration Practices - pytest documentation. (n.d.). Retrieved October 20, 2021, from https://docs.pytest.org/en/6.2.x/goodpractices.html. 
+
+## Feedback
+
+### Milestone 1
+
+Introduction: great Introduction, I like the way you bring AD. 
+Background: I really love your Background, I understand what is at stake and how you are going to leverage the differentiation properties in order to simplify the differentiation of big and cool functions.  
+How to use: Very clear, I like the way you thought through such detailed use cases in order to apprehend everything. 
+Implementation: very detailed outline of your implementation, I think this will be a good backbone for your actual project implementation.
