@@ -318,5 +318,12 @@ if __name__ == '__main__':
     for i in np.linspace(2, 3, 10):
         print(f.eval(x=i))
 
+    # test 9
+    f = 5**(tan(cos(sin(x)))**2 + 111)
+    print (f.eval(x=1.0))
 
+    # test 10
+    f = exp(sin(x + 3 * x**2) * cos(x)) + 10 * x * 11 + tan(x * x * x ** cos(x))
+    for i in np.linspace(1, 3, 10):
+        print (f.eval(x=i))
 
