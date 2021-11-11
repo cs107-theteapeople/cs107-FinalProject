@@ -36,7 +36,8 @@ def get_function( function , derivative ):
 def var(var_name):
     return Node(var_name=var_name)
 
-# this is a helper function that cretes a constant value node
+# this is a helper function that creates a constant
+# with operator overloading, this is not needed
 def const(value):
     return Node(value=value)
 
@@ -124,7 +125,7 @@ class Node:
     def __truediv__(self, other):
         # we apply the division function to these two nodes
         new_node = Node(None, None, lambda x,y: x/y,
-                        lambda x,y,xp,yp: xp/y )
+                        lambda x,y,xp,yp: ((y * xp - x * yp) / (y**2)))
         # set the child nodes
         new_node.left = self
         if isinstance(other, Node):
@@ -137,7 +138,7 @@ class Node:
     def __rtruediv__(self, other):
         # we apply the divide function in reverse order
         new_node = Node(None, None, lambda x,y: y/x,
-                        lambda x,y,xp,yp: -xp*y*float(-x)**(-2) )
+                        lambda x,y,xp,yp: ((x * yp - y * xp) / (x**2)))
         # set the child nodes
         new_node.left = self
         if isinstance(other, Node):
@@ -165,12 +166,35 @@ class Node:
     # right addition
     def __radd__(self, other):
         return self.__add__(other)
-    # return a pretty string representation of our node
+
+    # this is the addition operator overload
+    def __sub__(self, other):
+        # we apply the add function to these two nodes
+        new_node = Node(None, None, np.subtract, lambda x,y,xp,yp: xp - yp )
+        new_node.left = self
+        if isinstance(other, Node):
+            new_node.right = other
+        else:
+            new_node.right = Node(value=other)
+
+        return new_node
+
+    # right addition
+    def __rsub__(self, other):
+        # we apply the add function to these two nodes
+        new_node = Node(None, None, lambda x,y: y-x, lambda x,y,xp,yp: yp - xp)
+        new_node.left = self
+        if isinstance(other, Node):
+            new_node.right = other
+        else:
+            new_node.right = Node(value=other)
+
+        return new_node
 
     # the power function
     def __pow__(self, other):
         new_node = Node(None, None, np.power,
-                        lambda x,y,xp,yp: xp*y*(float(x)**(y-1)))
+                        lambda x,y,xp,yp: (x**(y-1)) * (y * xp + x * np.log(x) * yp))
         # set the child nodes
         new_node.left = self
         if isinstance(other, Node):
@@ -181,10 +205,8 @@ class Node:
 
     # the power function with self as the exponent
     def __rpow__(self, other):
-        # note that this funtion is not symmetrical
-        # the derivative for __rpow__ is different than __pow__
         new_node = Node(None, None, lambda x,y: float(y)**x,
-                        lambda x,y,xp,yp: xp * (float(y)**x) * np.log(y))
+                        lambda x,y,xp,yp: (y**(x-1)) * (x * yp + y * np.log(y) * xp))
         # set the child nodes
         new_node.left = self
         if isinstance(other, Node):
@@ -280,7 +302,7 @@ if __name__ == '__main__':
     # only derivatives for scalar functions are currently
     # supported
 
-    # our scalar variable
+    # # our scalar variable
     x = var('x')
 
     # test 1
@@ -327,3 +349,49 @@ if __name__ == '__main__':
     for i in np.linspace(1, 3, 10):
         print (f.eval(x=i))
 
+    # test 11
+    f = 1/x
+    print (f.eval(x=1))
+
+    # test 12
+    f = x / (x + x)
+    print (f.eval(x=2))
+
+    # test 13
+    f = const(1) / x
+    print (f.eval(x=1))
+
+    # test 14
+    f = x / 2
+    print (f.eval(x=1))
+
+    # test 15
+    f = x / const(2)
+    print (f.eval(x=1))
+
+    # test 16
+    f = ( (x ** 6) / (x ** 6))
+    print (f.eval(x=2))
+
+    # test 17
+    f = -x - 4
+    print (f.eval(x=2))
+
+    # test 18
+    f = 4 - x
+    print (f.eval(x=2))
+
+    # test 19
+    f = x ** 2
+    print (f.eval(x=2))
+
+    # test 20
+    f = 2 ** x
+    print (f.eval(x=2))
+
+    # test 21
+    f = x ** x
+    print (f.eval(x=2))
+
+    f = const(2) ** x
+    print (f.eval(x=2))
