@@ -1,5 +1,6 @@
 import pytest
 import math
+import numpy as np
 from autodiff import autodiff as ad
 
 
@@ -47,6 +48,8 @@ def test_neg():
     x = ad.var('x')
     f = -x
     assert f.eval(x=3) == {'value': -3, 'derivative': -1}, "Error: incorrect negative operation"
+    g = - 5 + x
+    assert g.eval(x=1) == {'value': -4, 'derivative': 1}, "Error: incorrect negative operation"
 
 def test_truediv():
     x = ad.var('x')
@@ -67,4 +70,13 @@ def test_rsub():
     x = ad.var('x')
     f = 3 - x
     assert f.eval(x=2) == {'value': 1, 'derivative': -1}, "Error: incorrect right subtraction"
-    
+
+def test_sin():
+    x = ad.var('x')
+    f = ad.sin(x)
+    assert f.eval(x=1) == {'value': np.sin(1), 'derivative': np.cos(1)}, "Error: incorrect sine function"
+
+def test_eval_incorrect_var():
+    x = ad.var('x')
+    f = x + 3
+    assert f.eval(y=3) == None, "Error: does not deal with incorrect variables in evaluation as expected"
