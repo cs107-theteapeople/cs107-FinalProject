@@ -1,16 +1,3 @@
-on:
-  steps:
-  - uses: actions/checkout@master
-  - uses: codecov/codecov-action@v2
-    with:
-      files: ./coverage1.xml,./coverage2.xml # optional
-      flags: unittests # optional
-      name: codecov-umbrella # optional
-      fail_ci_if_error: false # optional (default = false)
-      verbose: false # optional (default = false)
-
-
-
 name: CI
 
 # Controls when the workflow will run
