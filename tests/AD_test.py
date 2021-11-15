@@ -1,6 +1,6 @@
 import pytest
 import math
-import autodiff as ad
+from autodiff import autodiff as ad
 
 
 def test_init_var():
