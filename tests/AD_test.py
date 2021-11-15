@@ -1,6 +1,11 @@
 import pytest
 import math
+import numpy as np
+import sys
+sys.path.append('cs107-FinalProject/autodiff')
 from autodiff import autodiff as ad
+
+
 
 def test_init_var():
     print (dir(ad))
@@ -16,46 +21,65 @@ def test_mul():
     x = ad.var('x')
     f = x * 3
     assert f.eval(x=3) == {'value': 9, 'derivative': 3}, "Error: incorrect multiplication"
-    g = x * ad.const(3)
-    assert g.eval(x=3) == {'value': 9, 'derivative': 3}, "Error: incorrect multiplication"
 
 def test_rmul():
     x = ad.var('x')
     f = 3 * x
     assert f.eval(x=3) == {'value': 9, 'derivative': 3}, "Error: incorrect right multiplication"
-    g = ad.const(3) * x
-    assert g.eval(x=3) == {'value': 9, 'derivative': 3}, "Error: incorrect right multiplication"
 
 def test_add():
     x = ad.var('x')
     f = x + 3
     assert f.eval(x=3) == {'value': 6, 'derivative': 1}, "Error: incorrect addition"
-    g = x + ad.const(3)
-    assert g.eval(x=3) == {'value': 6, 'derivative': 1}, "Error: incorrect addition"
 
 def test_radd():
     x = ad.var('x')
     f = 3 + x
     assert f.eval(x=3) == {'value': 6, 'derivative': 1}, "Error: incorrect right addition"
-    g = ad.const(3) + x
-    assert g.eval(x=3) == {'value': 6, 'derivative': 1}, "Error: incorrect right addition"
     
 def test_pow():
     x = ad.var('x')
     f = x ** 2
     assert f.eval(x=3) == {'value': 9, 'derivative': 6}, "Error: incorrect power"
-    g = x ** ad.const(2)
-    assert g.eval(x=3) == {'value': 9, 'derivative': 6}, "Error: incorrect power"
 
 def test_rpow():
     x = ad.var('x')
     f = math.e ** x
     assert f.eval(x=2) == {'value': math.e ** 2, 'derivative': math.e ** 2}, "Error: incorrect right power"
-    g = ad.const(math.e) ** x
-    assert g.eval(x=2) == {'value': math.e ** 2, 'derivative': math.e ** 2}, "Error: incorrect right power"
 
 def test_neg():
     x = ad.var('x')
     f = -x
     assert f.eval(x=3) == {'value': -3, 'derivative': -1}, "Error: incorrect negative operation"
+    g = - 5 + x
+    assert g.eval(x=1) == {'value': -4, 'derivative': 1}, "Error: incorrect negative operation"
 
+def test_truediv():
+    x = ad.var('x')
+    f = x / 3
+    assert f.eval(x=3) == {'value': 1, 'derivative': 1 / 3}, "Error: incorrect truediv"
+
+def test_rtruediv():
+    x = ad.var('x')
+    f = 3 / x
+    assert f.eval(x=3) == {'value': 1, 'derivative': - 1 / 3}, "Error: incorrect right truediv"
+    
+def test_sub():
+    x = ad.var('x')
+    f = x - 3
+    assert f.eval(x=1) == {'value': -2, 'derivative': 1}, "Error: incorrect subtraction"
+    
+def test_rsub():
+    x = ad.var('x')
+    f = 3 - x
+    assert f.eval(x=2) == {'value': 1, 'derivative': -1}, "Error: incorrect right subtraction"
+
+def test_sin():
+    x = ad.var('x')
+    f = ad.sin(x)
+    assert f.eval(x=1) == {'value': np.sin(1), 'derivative': np.cos(1)}, "Error: incorrect sine function"
+
+def test_eval_incorrect_var():
+    x = ad.var('x')
+    f = x + 3
+    assert f.eval(y=3) == None, "Error: does not deal with incorrect variables in evaluation as expected"
