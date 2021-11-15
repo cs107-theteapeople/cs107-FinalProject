@@ -1,9 +1,9 @@
 import pytest
 import math
 import numpy as np
-import sys
-sys.path.append('cs107-FinalProject/autodiff')
-from autodiff import autodiff as ad
+#import sys
+#sys.path.append('cs107-FinalProject/autodiff')
+from autodiff.autodiff import autodiff as ad
 
 
 
