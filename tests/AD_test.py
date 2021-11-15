@@ -3,7 +3,7 @@ import math
 import numpy as np
 import sys
 #sys.path.insert(1,'/cs107-FinalProject/autodiff')
-sys.path.insert(1,'../autodiff')
+sys.path.insert(1,'./autodiff')
 from autodiff import autodiff as ad
 #import autodiff as ad 
 
