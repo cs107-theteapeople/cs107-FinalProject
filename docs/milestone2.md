@@ -1,4 +1,4 @@
-# Milestone 1
+# Milestone 2
 ### AC 207 Fall 2021   
 
 #### David Berthiaume
@@ -188,6 +188,9 @@ Inputs are entered as keyword arguments or a dictionary.  We match these inputs 
 Once this function is called, the computation graph (created during function object instantiation) is used to evaluate the function at the supplied points, and then compute the derivative at these points using forward mode automatic differentiation.  We do not plan to use dual numbers for this project as we feel that doing so will potentially reduce code readability and understanding.  As we perform the forward and tangent traces, we will be storing these intermediate results in simple Python lists.
 
 For functions with multiple inputs and/or outputs, we will allow users to specify which derivatives they would like to compute.  By default, we will compute all derivatives and return the Jacobian.  
+  
+### Future Features
+As we look towards the future with the above functions and features fully implemented, we intend to expand our implementation by implementing support for multiple inputs and outputs, implementing a Newton solver, and implementing support for vectors of variables. By implementing these key additional features, our software will have expanded versatility in supporting more versatile inputs and outputs and enabling more computational flexibility. In implementing these new features, our primary challenges will include code compatability with our existing features, as well as making sure our implementation is accurate, robust and scalable. Additionally, as we implement these new features, we also have to consider changing and optimizing directory structure in order to make sure our organization is clear and logical, as well as including and implementing any and all new additional modules, classes, data structures, and necessary computations in order to ensure our full implementation is not only fully functional but also optimal.
 
 ### External Dependencies
 
