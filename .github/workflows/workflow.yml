@@ -20,7 +20,7 @@ jobs:
         pip install pytest
         pip install pytest-cov
         pip install numpy
-        pip install -e /autodiff/autodiff.py
+        pip install -e /autodiff/
         pytest --cov=./ --cov-report=xml
     - name: Upload coverage to Codecov
       uses: codecov/codecov-action@v2
