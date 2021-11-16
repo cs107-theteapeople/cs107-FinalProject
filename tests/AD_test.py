@@ -81,7 +81,30 @@ def test_sin():
     f = ad.sin(x)
     assert f.eval(x=1) == {'value': np.sin(1), 'derivative': np.cos(1)}, "Error: incorrect sine function"
 
+def test_cos():
+    x = ad.var('x')
+    f = ad.cos(x)
+    assert f.eval(x=1) == {'value': np.cos(1), 'derivative': -np.sin(1)}, "Error: incorrect cosine function"
+
+def test_tan():
+    x = ad.var('x')
+    f = ad.tan(x)
+    assert f.eval(x=1) == {'value': np.tan(1), 'derivative': 1 / ((np.cos(1)) ** 2)}, "Error: incorrect tangent function"
+
 def test_eval_incorrect_var():
     x = ad.var('x')
     f = x + 3
     assert f.eval(y=3) == None, "Error: does not deal with incorrect variables in evaluation as expected"
+
+def test_print():
+    x = ad.var('x')
+    f = x + 3
+    assert print(f) == None, "Error: print does not return None"
+    assert ad.Node.print_postorder(f) == None, "Error: static method print_postorder() does not return None"
+    assert ad.Node.print_preorder(f) == None, "Error: static method print_preorder() does not return None"
+    assert ad.Node.print_reverse(f) == None, "Error: static method print_reverse() does not return None"
+    
+def test_func_comp():
+    x = ad.var('x')
+    f1 = ad.sin(2 * x)
+    assert f1.eval(x=1) == {'value': np.sin(2), 'derivative': 2 * np.cos(2)}, "Error: function composite – sin(2x)"
