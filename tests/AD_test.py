@@ -2,10 +2,8 @@ import pytest
 import math
 import numpy as np
 import sys
-#sys.path.insert(1,'/cs107-FinalProject/autodiff')
 sys.path.insert(1,'./autodiff')
-#from autodiff import autodiff as ad
-import autodiff as ad 
+import autodiff as ad
 
 
 
@@ -38,7 +36,7 @@ def test_radd():
     x = ad.var('x')
     f = 3 + x
     assert f.eval(x=3) == {'value': 6, 'derivative': 1}, "Error: incorrect right addition"
-    
+
 def test_pow():
     x = ad.var('x')
     f = x ** 2
