@@ -1,5 +1,0 @@
-steps:
-- uses: actions/checkout@master
-- uses: codecov/codecov-action@v2
-  with:
-    token: "c6d8c1cd-6ba5-4317-a7e7-f469d3c60d4f" 
