@@ -344,13 +344,15 @@ class Node:
            arguments:
            x - the value of the left node
            y - the value of the right node
-       """
+        """
+        val = x ** y
+        # do we end up with a complex number?
+        if not (isinstance(val, int) or (isinstance(val, float))):
+            raise ValueError('Raising {x} to the {y}th power results in a complex number')
 
-        if x < 0 and y.as_integer_ratio()[1] % 2 == 0:
-            raise ValueError('Complex numbers are not supported. Cannot raise a negative number to a power'
-                             ' that will result in a complex number')
-        else:
-            return x ** y
+        return val
+
+
 
     # our generic power function
     # this is a static method that will be called from __pow__ and __rpow__
