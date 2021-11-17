@@ -119,7 +119,7 @@ The second module, rootfinder, is an application that uses autodiff to find the 
 
 #### Where will our test suite live?
 
-Per the recommendations from class, our test suites (using pytest) will live within a tests directory, inside autodiff and rootfinder subdirectories.  For milestone 2, with rootfinder not implemented yet, our tests simply live in the tests directory. We will be using pytest for our testing.  We will also be using codecov to monitor our code coverage.  Since Travis CI is no longer free, we set up a GIT event to update codecov automatically instead of going through Travis CI.
+Per the recommendations from class, our test suites (using pytest) will live within a tests directory, inside autodiff and rootfinder subdirectories.  For milestone 2, with rootfinder not implemented yet, our tests simply live in the tests directory. We will be using pytest for our testing.  We will also be using codecov to monitor our code coverage.  Since Travis CI is no longer free, we set up a workflow to update codecov automatically via Github Action  instead of going through Travis CI.
 
 #### How will you distribute your package (e.g. PyPI)?
 Since this project only consists of python sources and doesn't need any files to be built, installation could be done by simply cloning the repository as described above.  We encourage users to play around with the code and even submit pull requests.  Our focus will be on code readability and learning, and we hope to make the code as understandable as possible so that users will be encouraged to modify the code and try new techniques.  As mentioned above, if appropriate, we will host our project on PyPI and allow users to install the software with pip.  
