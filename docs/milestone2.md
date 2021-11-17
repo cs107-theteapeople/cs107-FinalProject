@@ -8,7 +8,6 @@
 
 ## Introduction
 
-
 Automatic differentiation, also known as algorithmic differentiation, involves efficiently and accurately evaluating derivatives of numeric functions from a computational perspective. In an era of rapidly advancing technology, automatic differentiation has many broad applications, especially in artificial intelligence, allowing many computations to be performed efficiently and greatly expanding the scope and coverage of artificial intelligence to widely different applications to enhance human lives. While artificial intelligence is certainly a widely known application of automatic differentiation with immense potential for further expanded applications, the significance of automatic differentiation also derives from its potential applications in computational fluid dynamics, atmospheric sciences, and engineering design and optimization.
 
 Root finding is an algorithm used to find the zeroes or roots of a continuous function.  Often, solving for the roots of a function analytically is not possible (except in certain simple cases such as lower degree polynomials).  Iterative methods are used instead.  One highly efficient method is Newton’s method which requires exact forms or approximations of the derivative of the function.
@@ -45,46 +44,38 @@ In the 'Derivative' column, we are computing the derivative of the elementary op
 
 ## How to Use Autodiff
 
-A user will interact with the automatic differentiation functionality through the autodiff module.  This module uses automatic differentiation to calculate the Jacobian of a user supplied function. 
+A user will interact with the automatic differentiation functionality through the autodiff module. This module uses automatic differentiation to calculate the Jacobian of a user supplied function. 
 
-To install the package you can use git clone:
+We have not published the autodiff package on PyPI yet. Hence to install the package, you can use git clone:
+git clone “https://github.com/cs107-theteapeople/cs107-FinalProject”
+The autodiff folder contains the autodiff package. 
 
-```
-git clone https://github.com/cs107-theteapeople/cs107-FinalProject.git 
-```
-If allowed and supported for this project, we will also use PyPi to allow a user to install the library with pip. (We don't want to put something on PyPi that may not be suitable.)
+In the root directory of the repository, you can import the main autodiff module with the following code: 
+
+import autodiff.autodiff as ad
 
 The general structure of usage will be as follows:
+1. A user will instantiate a scalar variable using the autodiff module 
+2. A user will define a function by combining variables, constants, and primitive functions through various operations using the autodiff module.  
+3. Function value and derivatives will be calculated and returned for specific input points using the `eval` function.  
+4. 
+Here is an example of basic usage for the autodiff module. 
 
-* A user will define a function by combining variables, constants, and primitive functions through various operations.  
-* A user will instantiate an AutoDiff object with the supplied function.
-* The differentiate member function of the AutoDiff object will then be used to calculate the desired derivatives for specific input points.
+Instantiate a one-dimensional vector:
+`x = ad.var(‘x’)`
 
-It is important to note that the details of our implementation and usage patterns may change as we progress further into the project.
-
-Here is an example basic usage for the autodiff module.
-
-```
-import autodiff as ad
-```
 Set user-defined function:
+
+`f = ad.exp(ad.sin(x + 3 * x**2) * ad.cos(x)) + 10 * x * 11 + ad.tan(x * x * x ** ad.cos(x))`
+
+Evaluate the function and derivative at multiple points:
 ```
-func = 0.3 * ad.sin( ad.var('x') * ad.var('y') )
+for i in np.linspace(1,3,10):
+    print(f.eval(x=i))
 ```
 
-For higher dimensional functions where named variables will become unwieldy, we will supply methods to allow a user to conveniently create and supply arrays of input variables.
-  
-Instantiate the AutoDiff object:
-```
-ad1 = ad.AutoDiff(func)
-```
-Evaluate the derivative:
-```
-ad1.differentiate(x = 2, y = 3)
-```
-
-This will return the derivative of this function with respect to x and with respect to y evaluated at the given points as a numpy array or scalar value.  We will also provide options to allow users to specify arrays of input values by providing numpy arrays as inputs.
-
+This will return both the value and the derivative of this function with respect to x evaluated at the given points as a numpy array or scalar value within a dictionary.  For example:
+`{'value': -3.027209981231713, 'derivative': -3.3713769787623757}`
 
 ## How to Use Rootfinder
 
@@ -93,13 +84,13 @@ The rootfinder module can be used to find the roots of a supplied function defin
 Example use case:
 
 ```
-import autodiff as ad
-import rootfinder as rf
+import autodiff.autodiff as ad
+import autodiff.rootfinder as rf
 ```
 
 Create our function:
 ```
-func = ad.sin( ad.var(x) ) * ad.cos(1.2) - 2.0
+func = ad.sin( ad.var('x') ) * ad.cos(1.2) - 2.0
 ```
 
 Find the roots of our function:
@@ -128,14 +119,14 @@ The second module, rootfinder, is an application that uses autodiff to find the 
 
 #### Where will our test suite live?
 
-Per the recommendations from class, our test suites (using pytest) will live within a tests directory, inside autodiff and rootfinder subdirectories.  We will be using pytest along with travis ci and codecov to monitor our test statuses and codecov to monitor our test coverage.
+Per the recommendations from class, our test suites (using pytest) will live within a tests directory, inside autodiff and rootfinder subdirectories.  For milestone 2, with rootfinder not implemented yet, our tests simply live in the tests directory. We will be using pytest for our testing.  We will also be using codecov to monitor our code coverage.  Since Travis CI is no longer free, we set up a GIT event to update codecov automatically instead of going through Travis CI.
 
 #### How will you distribute your package (e.g. PyPI)?
 Since this project only consists of python sources and doesn't need any files to be built, installation could be done by simply cloning the repository as described above.  We encourage users to play around with the code and even submit pull requests.  Our focus will be on code readability and learning, and we hope to make the code as understandable as possible so that users will be encouraged to modify the code and try new techniques.  As mentioned above, if appropriate, we will host our project on PyPI and allow users to install the software with pip.  
 
 #### How will you package your software? Will you use a framework? If so, which one and why? If not, why not?
 
-Our project will only consist of python sources and a few common dependencies.  We will have no compiler requirements or binary files.  Our initial plan is to not use any packaging framework.  We will be providing a requirements.txt file to allow a user to install the needed library requirements.  We will provide clear documentation on how to install these requirements.
+Our project will only consist of python sources and a few common dependencies.  We will have no compiler requirements or binary files. For milestone 2, our initial plan is to not use any packaging framework.  We will be providing a requirements.txt file to allow a user to install the needed library requirements.  We will provide clear documentation on how to use autodiff and install these requirements.
 
 #### Other considerations?
 
@@ -143,15 +134,23 @@ Since we will be developing an application for our extension, we will speak with
 
 
 ## Implementation 
-### Module methods
+### Introduction
 
-A critical component of the **autodiff** module is the ability to define functions and input variables.  We use a model similar to sympy.  As mentioned in the ‘how to use autodiff’ section of this document, elementary functions will be defined in the autodiff module and these can be combined to make composite functions.  We make heavy use of operator overloading to allow users to conveniently define their functions.  Elementary functions will be Python functions within the autodiff module that generate simple Function instances which are described below.
+A critical component of the **autodiff** module is the ability to define functions and input variables.  We use a model similar to sympy.  As mentioned in the ‘how to use autodiff’ section of this document, elementary functions will be defined in the autodiff module and these can be combined to make composite functions.  We make heavy use of operator overloading to allow users to conveniently define their composite functions.  Elementary functions will be Python functions within the autodiff module that generate simple intermediate node instances as described below.  
 
-### Function class
+Our autodiff library uses lazy evaluation.  The binary tree of nodes is built first and possible values are represented by variable nodes.  Once a binary tree is created when the function is defined, the tree can be traversed and the value of the function and the derivative of the function computed by using the `eval` function as described in the *how to use* section.  In this way, a single function can be defined, and then efficiently evaluated at any number of inputs.  In particular, this approach will be useful for our Newton solver.
 
-Our main class for building composite functions will be the Function class.  This will use operator overloading heavily to allow the user to build up composite functions.  The forward computation graph will be generated as the composite function is built (taking advantage of the Python parser and order of operations).  The utility function ad.var(<name>) is used to build a primitive function that is just a single input variable.  These variables have names associated with them.  Composite functions are built by combining these variables with operators and primitive functions (created using helper functions in the autodiff module).  We will likely be using python dictionaries to store the computation graph as a series of nodes and their children along with their operations.  
+### Node class
 
-Here are some example ways for a user to define a composite function (an instance of the Function class, or a list of instances).  
+Our main class for building composite functions is the autodiff node class.  There are three types of nodes.  
+
+1. A variable node - this node contains a symbolic representation of a numeric value.   It is a leaf node in the binary tree corresponding to a composite function.
+2. A constant node - this node contains a specific numeric value that does not change.  Just like the variable node, it is a leaf node in our binary tree.
+3. An intermediate node - these are all non-leaf nodes and have unary or binary functions attached to them.  These intermediate nodes are traversed during forward computation, the functions are applied and the derivatives are computed using the chain rule.  
+
+Nodes will use operator overloading heavily to allow the user to build up composite functions.  The forward computation graph will be generated as the composite function is built (taking advantage of the Python parser and order of operations).  The utility function var(<name>), is used to build a single variable node.  These variables nodes have names associated with them.  Composite functions are built by combining these variables with operators and primitive functions (created using helper closures in the autodiff module), and constants. 
+
+Here are some example ways for a user to define a composite function (an instance of the Node class with children, or a list of instances).  
 
 ```
 import autodiff as ad
@@ -162,40 +161,67 @@ func2 = ad.cos( x1 * x2 )
 func3 = ad.sin( x1 ) + ad.cos( x2 ) * 4.0 
 func4 = x1 ** 6  (operator overloading allows us to handle raising powers to reals or integers)
 func5 = [x1 * x2, x1 + x2] (functions with multiple outputs can be defined through lists)
+func6 = x1 ** (cos(x1) + 2 * x1) + 42
 ```
 
-### AutoDiff class
+### Evaluation
 
-Once functions are defined, an AutoDiff object can be instantiated to evaluate the function for various inputs and compute the derivatives.  
+Once a composite function is defined, the `eval` function can be called to evaluate the function and compute the derivative of the function at the specified inputs efficiently.
 
-```
-adiff = ad.AutoDiff( func2 )
-```
-where func2 is an autodiff function or a list of autodiff functions (for functions that have multiple outputs).  This class automatically determines the inputs and the number of outputs from the function definition.  This is used for validation when a user requests the derivatives to be computed.  
+Inputs are entered as keyword arguments or a dictionary.  We match these inputs with the expected variables from the composite function corresponding to the Node.  If there is a mismatch in variables and expected inputs, we raise an appropriate error.  For array inputs, we will check to make sure the array sizes match the expected inputs as defined in the function.
 
-Once this object is instantiated, the function's computation graph is traversed and the derivative is calculated.  During graph traversal we compute the necessary traces similar to how we have done this in class and store these traces in python lists.  We will not be using dual numbers for our implementation.
-
-For this project, a core data structure that we will use is dictionaries both the store our variables (with our keys being the names of the variables) and to store our computation graph.  Even though dictionaries are not the most efficient way to store this data, we would like to focus on software design, code readability, maintainability, and learning over efficiency for this project (see our mission statement below).  
-
-This class provides one key method to calculate derivatives.  
-
-```
-adiff.differentiate( x1 = 4.0, x2 = 2.0 )
-```
-
-Inputs are entered as keyword arguments or a dictionary.  We match these inputs with the expected variables from the function that was used when instantiating the object.  If there is a mismatch in variables and expected inputs, we raise an appropriate error.  For array inputs, we will check to make sure the array sizes match the expected inputs as defined in the function.
-
-Once this function is called, the computation graph (created during function object instantiation) is used to evaluate the function at the supplied points, and then compute the derivative at these points using forward mode automatic differentiation.  We do not plan to use dual numbers for this project as we feel that doing so will potentially reduce code readability and understanding.  As we perform the forward and tangent traces, we will be storing these intermediate results in simple Python lists.
+Once this function is called, the computation graph (created during function object instantiation) is used to evaluate the function at the supplied points, and then compute the derivative at these points using forward mode automatic differentiation.  As we perform the forward and tangent traces, we store these intermediate results within all the nodes of the binary tree.
 
 For functions with multiple inputs and/or outputs, we will allow users to specify which derivatives they would like to compute.  By default, we will compute all derivatives and return the Jacobian.  
 
+### Adding New Functions
+
+We have written a closure `get_function` that allows one to very easily add functions to our autodiff library.  This closure returns a function that handles inserting the necessary nodes into the binary tree, defining the right types of node to insert, establishing the appropriate child nodes, and storing the primary and tangent functions.  
+
+The following is an example of using this closure to create the *tan* function.
+
+```
+tan = get_function(np.tan,   lambda x,xp : xp * (1/np.cos(x))**2)
+```
+
+This closure takes two arguments.  The first one defines the function to evaluate and the second one defines the derivative of that function (using the chain rule).  In this example, the function 
+`lambda x,xp : xp * (1/np.cos(x))**2` is inlined as a lambda function, but this could also easily have been a regular python function.  
+
+Our primary function expects one or two arguments corresponding to the values of the inputs depending on if the function is unary (sin, cos, etc.) `x`, or binary (addition, multiplication, division, etc.) `x` and `y`.  The derivative function expects 4 arguments. These are the values of the inputs `x`, and `y` and the derivatives of the inputs `xp`, and `yp`
+
 ### External Dependencies
 
-We would borrow from external dependencies such as numpy and potentially a graph plotting library for viewing the computation graphs. For efficient computation, we will be relying heavily on numpy to carry out the elementary function operations within each defined elementary function in autodiff; for example, for the primal trace and its corresponding tangent trace for ad.sin(), we would use np.sin() and np.cos() to carry out the operations respectively.  For efficiency, we may consider using the [numba](https://numba.pydata.org/) library as an optional dependency for some of our core algorithms if this doesn’t reduce code readability and understanding.  We are also considering storing a map of primitive functions and their corresponding derivatives in a separate text file rather than hard-coding them.
+We would borrow from external dependencies such as numpy and potentially a graph plotting library for viewing the computation graphs. For efficient computation, we will be relying heavily on numpy to carry out the elementary function operations within each defined elementary function in autodiff; for example, for the primal trace and its corresponding tangent trace for ad.sin(), we would use np.sin() and np.cos() to carry out the operations respectively.  For efficiency, we may later consider using the [numba](https://numba.pydata.org/) library as an optional dependency for some of our core algorithms if this doesn’t reduce code readability and understanding.  
 
 ## License:
 
 After much consideration, we have settled on using the gnu GPLv3 license as it has allows one to do almost anything they want with the code **except** distributing closed-source versions.  Given the academic nature of this project, we feel it is best that close-source versions are not allowed.  The main purpose of this code is for people to learn from it, and we feel that having the freedom to view and modify code is a critical part of this.  
+
+## Future Features
+
+There several future features on our list which we will be implementing and a few more difficult features that we are considering to implement.
+
+1. Support for multiple input variables - Currently only scalar functions are supported.  Right after milestone2 and ensuring that we have thoroughly tested our code for scalar functions, we will add support for multiple inputs.  Given the modular design of our software, we feel that this will not be difficult to implement.  During traversal, we will need to keep track of all of our input variables and their corresponding derivatives.  
+
+
+2. Support for multiple output values - Currently we only support functions with scalar outputs.  After we have implemented vector inputs, we will add support for vector outputs.  Given our graph construction, this should be fairly straight forward.  We will be returning all of these values as a dictionary from the `eval` function.  
+
+
+3. Support for arrays of variables.  Even with vector functions supported, variables will need to be defined individually, i.e.
+`x1, x2, x3 = var('x1'), var('x2'), var('x3')...`
+This is quite cumbersome.  We plan on adding support for vectors of variables in the following manner.
+`x_array = var_array('x', 100)` which will generate an array of 99 variables. These can be referenced by using indices, `x[4]` to reference the 4th variable.
+Some applications of this include defining recursive functions, and working with finite series.  
+
+
+4. We will be implementing a root finding algorithm using Newton's method.  A function can be defined using the autodiff library, and then newton's method will solve for the roots of the given funtion.  This will be iteratively using autodiff to efficiently compute derivatives.  The lazy evaluation approach of our library lends itself quite well to a Newton solver, where the same equation (and its derivative) is evaluated over and over again.
+
+
+5. An option we are considering, since we would like to provide this library for educational purposes, is to generate a nice printout or graph of the binary tree and the primary and trangent traces as they are being evaluated.  Since we store all of this information in the binary tree, it would be useful to be able to see the inner workings of automatic differentiation as it is being applied.  We have already supplied several simple preorder and postorder print methods for our binary tree.  We would be expanding on this functionality.
+
+
+6. Similar to 5, we may consider implementing a simple visualization tool to plot (using matplotlib) the iterations as an animation or static plot of our newton solver for scalar functions.  For example, since we use a lazy evaluation approach to automatic differentiation, it is easy to plot a given function along a range of input points.  It is easy to iterative compute and plot the derivatives as well as the individual steps that the Newton solver takes to find the nearest root of the composite function.
+ 
 
 ## Mission Statement:
 Our goal with this project is to provide an automatic differentiation and rootfinder library that is easy to understand, read, and modify.  We wish to provide potential users with an easy-to-understand code that they can learn from.  We encourage users to modify the code and experiment with various techniques.
