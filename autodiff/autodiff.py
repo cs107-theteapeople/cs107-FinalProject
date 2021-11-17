@@ -28,9 +28,7 @@ def get_function( function , derivative ):
                     the right value.  These are combined together
                     to perform the chain rule for the computation
                     of our derivative.
-      """
-
-
+    """
     # generate the function that can be used to elementary mathematical functions
     def inner_function( item, other_item = None ):
         """This inner function is what is generated
@@ -82,7 +80,11 @@ def const(value):
         arguments:
         value -- This is the value for the new constant
           """
-    return Node(value=value)
+    if isinstance(value, int) or isinstance(value, float):
+        return Node(value=value)
+    else:
+        raise ValueError("Only integers and floating point numbers are supported for constants.")
+
 
 # user the helper closure above, this is how we define functions
 # each function can now be defined in a single line
@@ -92,7 +94,7 @@ sin = get_function(np.sin,   lambda x,xp : xp * np.cos(x))
 cos = get_function(np.cos,   lambda x,xp : -xp * np.sin(x))
 exp = get_function(np.exp,   lambda x,xp : xp * np.exp(x))
 tan = get_function(np.tan,   lambda x,xp : xp * (1/np.cos(x))**2)
-pow = get_function(np.power, lambda x,y,xp,yp : yp * y * (x**(y-1)))
+add = get_function(lambda x,y: x+y, lambda x,y,xp,yp : xp + yp)
 
 
 # here is our main class
@@ -165,6 +167,11 @@ class Node:
         # our tree
         Node.get_variables(self, vars)
 
+        # check to see if the variable types are numeric
+        for key, val in kwargs.items():
+            if not (isinstance(val, int) or isinstance(val, float)):
+                raise ValueError(f'Attempting to assign a non-numeric value to variable {key}:{val}')
+
         # if the variables
         if kwargs.keys() != vars:
             print ('variables do not match')
@@ -229,10 +236,7 @@ class Node:
                         lambda x,y,xp,yp: ((x * yp - y * xp) / (x**2)))
         # set the child nodes
         new_node.left = self
-        if isinstance(other, Node):
-            new_node.right = other
-        else:
-            new_node.right = Node(value=other)
+        new_node.right = Node(value=other)
         return new_node
 
     # right multiplication
@@ -306,10 +310,7 @@ class Node:
         # we apply the add function to these two nodes
         new_node = Node(None, None, lambda x,y: y-x, lambda x,y,xp,yp: yp - xp)
         new_node.left = self
-        if isinstance(other, Node):
-            new_node.right = other
-        else:
-            new_node.right = Node(value=other)
+        new_node.right = Node(value=other)
 
         return new_node
 
@@ -411,12 +412,8 @@ class Node:
         """
         new_node = Node(None, None, lambda x: -x,
                         lambda x,xp: -xp)
-        # we support Node objects or numeric values
-        # if a numeric value is passed, we turn it into a constant Node
-        if isinstance(self, Node):
-            new_node.left = self
-        else:
-            new_node.left = Node(value=self)
+
+        new_node.left = self
         return new_node
 
     def __str__(self):

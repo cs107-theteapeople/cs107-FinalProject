@@ -46,30 +46,42 @@ In the 'Derivative' column, we are computing the derivative of the elementary op
 
 A user will interact with the automatic differentiation functionality through the autodiff module. This module uses automatic differentiation to calculate the Jacobian of a user supplied function. 
 
-We have not published the autodiff package on PyPI yet. Hence to install the package, you can use git clone:
-git clone “https://github.com/cs107-theteapeople/cs107-FinalProject”
-The autodiff folder contains the autodiff package. 
+### Installation
+
+We have not published the autodiff package on PyPI yet. Hence, to install the package, you can use git clone:
+
+`git clone https://github.com/cs107-theteapeople/cs107-FinalProject`
+
+Once you have cloned the code, navigate to the root directory of the repository.  In the above example, this would be `cs107-FinalProject`.  
+
+The only requirement for our project is numpy.  This can be installed with pip using the supplied requirements.txt file
+with the following command.
+
+`pip install -r requirements.txt`
+
+### Usage
 
 In the root directory of the repository, you can import the main autodiff module with the following code: 
 
-import autodiff.autodiff as ad
+`from autodiff import autodiff as ad`
 
 The general structure of usage will be as follows:
 1. A user will instantiate a scalar variable using the autodiff module 
 2. A user will define a function by combining variables, constants, and primitive functions through various operations using the autodiff module.  
 3. Function value and derivatives will be calculated and returned for specific input points using the `eval` function.  
-4. 
+ 
 Here is an example of basic usage for the autodiff module. 
 
-Instantiate a one-dimensional vector:
+Instantiate a scalar variable:
 `x = ad.var(‘x’)`
 
-Set user-defined function:
+Set a user-defined composite function:
 
-`f = ad.exp(ad.sin(x + 3 * x**2) * ad.cos(x)) + 10 * x * 11 + ad.tan(x * x * x ** ad.cos(x))`
+`f = ad.exp(ad.sin(x + 3 * x**2) * ad.cos(x))`
 
 Evaluate the function and derivative at multiple points:
 ```
+import numpy as np
 for i in np.linspace(1,3,10):
     print(f.eval(x=i))
 ```
@@ -117,9 +129,9 @@ The first module, autodiff, will contain the functionality to perform automated 
 
 The second module, rootfinder, is an application that uses autodiff to find the roots of a function using Newton’s method.  Here being able to find the derivative of a function with autodiff is needed to use Newton’s method, so rootfinder directly depends on autodiff.
 
-#### Where will our test suite live?
+#### Where do our test suite live?
 
-Per the recommendations from class, our test suites (using pytest) will live within a tests directory, inside autodiff and rootfinder subdirectories.  For milestone 2, with rootfinder not implemented yet, our tests simply live in the tests directory. We will be using pytest for our testing.  We will also be using codecov to monitor our code coverage.  Since Travis CI is no longer free, we set up a workflow to update codecov automatically via Github Action  instead of going through Travis CI.
+Per the recommendations from class, our test suites (using pytest) live within a tests directory. We use pytest for our testing and codecov to monitor our code coverage.  Since Travis CI is no longer free, we set up a workflow to update codecov automatically via Github Action  instead of going through Travis CI.
 
 #### How will you distribute your package (e.g. PyPI)?
 Since this project only consists of python sources and doesn't need any files to be built, installation could be done by simply cloning the repository as described above.  We encourage users to play around with the code and even submit pull requests.  Our focus will be on code readability and learning, and we hope to make the code as understandable as possible so that users will be encouraged to modify the code and try new techniques.  As mentioned above, if appropriate, we will host our project on PyPI and allow users to install the software with pip.  
@@ -148,7 +160,7 @@ Our main class for building composite functions is the autodiff node class.  The
 2. A constant node - this node contains a specific numeric value that does not change.  Just like the variable node, it is a leaf node in our binary tree.
 3. An intermediate node - these are all non-leaf nodes and have unary or binary functions attached to them.  These intermediate nodes are traversed during forward computation, the functions are applied and the derivatives are computed using the chain rule.  
 
-Nodes will use operator overloading heavily to allow the user to build up composite functions.  The forward computation graph will be generated as the composite function is built (taking advantage of the Python parser and order of operations).  The utility function var(<name>), is used to build a single variable node.  These variables nodes have names associated with them.  Composite functions are built by combining these variables with operators and primitive functions (created using helper closures in the autodiff module), and constants. 
+Nodes will use operator overloading heavily to allow the user to build up composite functions.  The forward computation graph will be generated as the composite function is built (taking advantage of the Python parser and order of operations).  The utility function `var(<name>)`, is used to build a single variable node.  These variables nodes have names associated with them.  Composite functions are built by combining these variables with operators and primitive functions (created using helper closures in the autodiff module), and constants. 
 
 Here are some example ways for a user to define a composite function (an instance of the Node class with children, or a list of instances).  
 
@@ -168,7 +180,7 @@ func6 = x1 ** (cos(x1) + 2 * x1) + 42
 
 Once a composite function is defined, the `eval` function can be called to evaluate the function and compute the derivative of the function at the specified inputs efficiently.
 
-Inputs are entered as keyword arguments or a dictionary.  We match these inputs with the expected variables from the composite function corresponding to the Node.  If there is a mismatch in variables and expected inputs, we raise an appropriate error.  For array inputs, we will check to make sure the array sizes match the expected inputs as defined in the function.
+Inputs are entered as keyword arguments or a dictionary.  We match these inputs with the expected variables from the composite function corresponding to the Node.  If there is a mismatch in variables and expected inputs, we raise an appropriate error.  For array inputs, we will check to make sure the array sizes match the expected inputs as defined in the function.  Only numeric inputs are allowed.
 
 Once this function is called, the computation graph (created during function object instantiation) is used to evaluate the function at the supplied points, and then compute the derivative at these points using forward mode automatic differentiation.  As we perform the forward and tangent traces, we store these intermediate results within all the nodes of the binary tree.
 
@@ -214,10 +226,10 @@ This is quite cumbersome.  We plan on adding support for vectors of variables in
 Some applications of this include defining recursive functions, and working with finite series.  
 
 
-4. We will be implementing a root finding algorithm using Newton's method.  A function can be defined using the autodiff library, and then newton's method will solve for the roots of the given funtion.  This will be iteratively using autodiff to efficiently compute derivatives.  The lazy evaluation approach of our library lends itself quite well to a Newton solver, where the same equation (and its derivative) is evaluated over and over again.
+4. We will be implementing a root finding algorithm using Newton's method.  A function can be defined using the autodiff library, and then newton's method will solve for the roots of the given function.  This will be iteratively using autodiff to efficiently compute derivatives.  The lazy evaluation approach of our library lends itself quite well to a Newton solver, where the same equation (and its derivative) is evaluated over and over again.
 
 
-5. An option we are considering, since we would like to provide this library for educational purposes, is to generate a nice printout or graph of the binary tree and the primary and trangent traces as they are being evaluated.  Since we store all of this information in the binary tree, it would be useful to be able to see the inner workings of automatic differentiation as it is being applied.  We have already supplied several simple preorder and postorder print methods for our binary tree.  We would be expanding on this functionality.
+5. An option we are considering, since we would like to provide this library for educational purposes, is to generate a nice printout or graph of the binary tree and the primary and tangent traces as they are being evaluated.  Since we store all of this information in the binary tree, it would be useful to be able to see the inner workings of automatic differentiation as it is being applied.  We have already supplied several simple preorder and postorder print methods for our binary tree.  We would be expanding on this functionality.
 
 
 6. Similar to 5, we may consider implementing a simple visualization tool to plot (using matplotlib) the iterations as an animation or static plot of our newton solver for scalar functions.  For example, since we use a lazy evaluation approach to automatic differentiation, it is easy to plot a given function along a range of input points.  It is easy to iterative compute and plot the derivatives as well as the individual steps that the Newton solver takes to find the nearest root of the composite function.
