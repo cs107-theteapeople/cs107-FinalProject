@@ -91,13 +91,13 @@ This will return both the value and the derivative of this function with respect
 
 ## How to Use Rootfinder
 
-The rootfinder module can be used to find the roots of a supplied function defined through the autodiff module.  
+The rootfinder module can be used to find the roots of a supplied function defined through the autodiff module. The module allows the user to set the precision level as well as the maximum iterations allowed for the rootfinder to solve for the input function's root.  
 
 Example use case:
 
 ```
-import autodiff.autodiff as ad
-import autodiff.rootfinder as rf
+from autodiff import autodiff as ad
+from autodiff import rootfinder as rf
 ```
 
 Create our function:
@@ -107,7 +107,7 @@ func = ad.sin( ad.var('x') ) * ad.cos(1.2) - 2.0
 
 Find the roots of our function:
 ```
-rf.findroots(func)
+rf.findroots(func, precision_level = 0.001, max_iterations = 2000)
 ```
 
 This will return the roots of the supplied function using Newton’s method as a numpy array or scalar value.
@@ -165,7 +165,7 @@ Nodes will use operator overloading heavily to allow the user to build up compos
 Here are some example ways for a user to define a composite function (an instance of the Node class with children, or a list of instances).  
 
 ```
-import autodiff as ad
+from autodiff import autodiff as ad
 x1 = ad.var(‘x1’)
 x2 = ad.var(‘x2’)
 func1 = x1 + x2
