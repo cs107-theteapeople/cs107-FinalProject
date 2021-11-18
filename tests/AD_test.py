@@ -354,10 +354,8 @@ def test_self_divide():
 def test_enter_bad_values():
     # test entering a string into the eval function
     # this should raise a ValueError
-    x = ad.var('k')
-    f = x * x * x
     x = ad.var('x')
-    f1 = (-2) ** x
+    f = x * x * x
 
     # entering a string into eval should raise a value error
     with pytest.raises(ValueError):
