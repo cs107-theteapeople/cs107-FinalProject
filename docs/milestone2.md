@@ -54,7 +54,7 @@ We have not published the autodiff package on PyPI yet. Hence, to install the pa
 
 Once you have cloned the code, navigate to the root directory of the repository.  In the above example, this would be `cs107-FinalProject`.  
 
-The only requirement for our project is numpy.  This can be installed with pip using the supplied requirements.txt file
+The only library requirement for our project is numpy.  This can be installed with pip using the supplied requirements.txt file
 with the following command.
 
 `pip install -r requirements.txt`
@@ -73,6 +73,7 @@ The general structure of usage will be as follows:
 Here is an example of basic usage for the autodiff module. 
 
 Instantiate a scalar variable:
+
 `x = ad.var(‘x’)`
 
 Set a user-defined composite function:
@@ -80,6 +81,7 @@ Set a user-defined composite function:
 `f = ad.exp(ad.sin(x + 3 * x**2) * ad.cos(x))`
 
 Evaluate the function and derivative at multiple points:
+
 ```
 import numpy as np
 for i in np.linspace(1,3,10):
@@ -87,6 +89,7 @@ for i in np.linspace(1,3,10):
 ```
 
 This will return both the value and the derivative of this function with respect to x evaluated at the given points as a numpy array or scalar value within a dictionary.  For example:
+
 `{'value': -3.027209981231713, 'derivative': -3.3713769787623757}`
 
 ## How to Use Rootfinder
@@ -97,7 +100,7 @@ Example use case:
 
 ```
 from autodiff import autodiff as ad
-from autodiff import rootfinder as rf
+from rootfinder import rootfinder as rf
 ```
 
 Create our function:
@@ -131,7 +134,15 @@ The second module, rootfinder, is an application that uses autodiff to find the 
 
 #### Where do our test suite live?
 
-Per the recommendations from class, our test suites (using pytest) live within a tests directory. We use pytest for our testing and codecov to monitor our code coverage.  Since Travis CI is no longer free, we set up a workflow to update codecov automatically via Github Action  instead of going through Travis CI.
+Per the recommendations from class, our test suites (using pytest) live within a tests directory. We use pytest for our testing and codecov to monitor our code coverage.  Since Travis CI is no longer free, we set up a workflow to update codecov automatically via Github Actions instead of going through Travis CI.
+
+To run the test suite, pytest must be installed.
+
+`pip install pytest`
+
+Once pytest is installed, within the root directory of the repository one can run the test suite with,
+
+`python -m pytest`
 
 #### How will you distribute your package (e.g. PyPI)?
 Since this project only consists of python sources and doesn't need any files to be built, installation could be done by simply cloning the repository as described above.  We encourage users to play around with the code and even submit pull requests.  Our focus will be on code readability and learning, and we hope to make the code as understandable as possible so that users will be encouraged to modify the code and try new techniques.  As mentioned above, if appropriate, we will host our project on PyPI and allow users to install the software with pip.  

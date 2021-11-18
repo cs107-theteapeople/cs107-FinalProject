@@ -436,7 +436,8 @@ class Node:
     # print the binary tree in preorder
     def print(self):
         """This function prints the binary tree of nodes
-        in preorder
+        in preorder.  Eventually we may expand this to
+        print a nice table or tree with the nodes.
 
         arguments:
         self -- the current node
@@ -449,7 +450,7 @@ class Node:
     @staticmethod
     def get_variables(root, vars):
         """This function finds a set of all variables that exist in
-        the composite function
+        the composite function by searching the binary tree
 
         arguments:
         root -- the root node to search from
