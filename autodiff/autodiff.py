@@ -181,25 +181,38 @@ class Node:
         # our tree
         Node.get_variables(self, vars)
 
+        if 'wrt' in kwargs:
+            if not set(kwargs['wrt']) < vars:
+                raise ValueError('Variables specified in wrt do not match the variables in the equation')
+        else:
+            wrt = kwargs.keys()
+
         # check to see if the variable types are numeric
         for key, val in kwargs.items():
-            if not (isinstance(val, int) or isinstance(val, float)):
-                raise ValueError(f'Attempting to assign a non-numeric value to variable {key}:{val}')
+            if key != 'wrt':
+                if not (isinstance(val, int) or isinstance(val, float)):
+                    raise ValueError(f'Attempting to assign a non-numeric value to variable {key}:{val}')
 
-        # if the variables
-        if kwargs.keys() != vars:
+        # if the variables do not match, raise an error
+        supplied_vars = set(kwargs.keys()) - set(['wrt'])
+        print (supplied_vars)
+        if supplied_vars != vars:
             print ('variables do not match')
             print (f'the variables in this tree are {vars}')
             print (f'the variables supplied by eval are {set(kwargs.keys())}')
-            return None
+            raise ValueError('Supplied variables do not match those in the equation.')
 
         # now we recursively traverse through the tree in postorder
         # computing the value and derivative along the way
-        Node.eval_post(self, kwargs)
+        Node.eval_post(self, kwargs, wrt)
         # return the value and the derivative
         return {'value': self.value, 'derivative': self.deriv}
 
     # this is the multiplication operator overload
+
+
+
+
     def __mul__(self, other):
         """This function overloads the multiplication operator
 
@@ -367,8 +380,6 @@ class Node:
 
         return val
 
-
-
     # our generic power function
     # this is a static method that will be called from __pow__ and __rpow__
     @staticmethod
@@ -512,11 +523,12 @@ class Node:
             Node.print_postorder(root.right)
             print(root)
 
+
     # this function traverses the tree in postorder and
     # computes the primary and tangent traces
     # keeping track of both the value and the derivative
     @staticmethod
-    def eval_post(root, var_values):
+    def eval_post(root, var_values, wrt):
         """This our primary recursive computation engine for lazy evaluation.
         Our binary tree is traversed and the primary and tangent traces are updated
         in postorder.  All of the existing symbolic variables are substituted with
@@ -528,8 +540,8 @@ class Node:
         var_values -- the list of variable values supplied to the call to eval
         """
         if root:
-            Node.eval_post(root.left, var_values)
-            Node.eval_post(root.right, var_values)
+            Node.eval_post(root.left, var_values, wrt)
+            Node.eval_post(root.right, var_values, wrt)
             # if a function is attached to this node, we apply it to the
             # children
             # this works similar to activation functions in neural networks
@@ -552,16 +564,16 @@ class Node:
             elif root.var_name:
                 root.value = var_values[root.var_name]
                 # here make a dictionary to store our derivatives
-                root.deriv = var_values.copy()
-                for key in root.deriv.keys():
+                root.deriv = {}
+                for key in wrt:
                     if key == root.var_name:
                         root.deriv[key] = 1
                     else:
                         root.deriv[key] = 0
             # TODO turn this into enum
             elif root.type == 'const':
-                root.deriv = var_values.copy()
-                for key in root.deriv.keys():
+                root.deriv = {}
+                for key in wrt:
                     root.deriv[key] = 0
 
 if __name__ == '__main__':
@@ -569,8 +581,8 @@ if __name__ == '__main__':
     y = var('y')
     z = var('z')
 
-    f = log(2, x)
-    print (f.eval(x=2))
+    f = log(2, x) * arcsin(y) * exp(z)
+    print (f.eval(x=2, y=.1, z=4, wrt = ['x', 'y']))
 
-    f = exp(x)
+    f = logistic(x)
     print (f.eval(x=.1))
