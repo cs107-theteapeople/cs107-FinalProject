@@ -8,7 +8,7 @@ import numpy as np
 # this is a closure that allows to define a new function
 # that can be used with autodiff
 # for each function, a primary function and its derivative is supplied
-def get_function( function , derivative ):
+def get_function( function_name, function , derivative ):
     """This is a closure that generates the necessary
       function to do node insertions into a binary graph
       and set up the necessary valuation and derivative
@@ -41,7 +41,7 @@ def get_function( function , derivative ):
               item -- This is the left node or numeric value (both are supported)
               other_item -- This is the right node or numeric value
         """
-        new_node = Node(None, None, function, derivative)
+        new_node = Node(None, None, function, derivative, function_name)
         # we support Node objects or numeric values
         # if a numeric value is passed, we turn it into a constant Node
         if isinstance(item, Node):
@@ -90,11 +90,23 @@ def const(value):
 # each function can now be defined in a single line
 # for each function, we supply the primary function and its derivative
 # lambda functions can be used here
-sin = get_function(np.sin,   lambda x,xp : xp * np.cos(x))
-cos = get_function(np.cos,   lambda x,xp : -xp * np.sin(x))
-exp = get_function(np.exp,   lambda x,xp : xp * np.exp(x))
-tan = get_function(np.tan,   lambda x,xp : xp * (1/np.cos(x))**2)
-add = get_function(lambda x,y: x+y, lambda x,y,xp,yp : xp + yp)
+sin = get_function('sin', np.sin,   lambda x,xp : xp * np.cos(x))
+cos = get_function('cos', np.cos,   lambda x,xp : -xp * np.sin(x))
+exp = get_function('exp', np.exp,   lambda x,xp : xp * np.exp(x))
+tan = get_function('tan', np.tan,   lambda x,xp : xp * (1/np.cos(x))**2)
+add = get_function('add', lambda x,y: x+y, lambda x,y,xp,yp: xp + yp)
+log = get_function('log', lambda x,y: np.log(x) / np.log(y), lambda x,y,xp,yp:
+                            (yp*np.log(x)/y - (np.log(y)*xp/x)) / (np.log(x)**2))
+ln =  get_function('ln',  lambda x : np.log(x), lambda x,xp: xp/x)
+arcsin = get_function('arcsin', lambda x: np.arcsin(x), lambda x,xp: xp / (np.sqrt( 1 - x**2 )))
+arccos = get_function('arccos', lambda x: np.arccos(x), lambda x,xp: - xp / (np.sqrt( 1 - x**2)))
+arctan = get_function('arctan', lambda x: np.arctan(x), lambda x,xp: xp / (x**2 + 1))
+cosh = get_function('sinh', lambda x: np.sinh(x), lambda x, xp: xp * np.cosh(x))
+sinh = get_function('cosh', lambda x: np.cosh(x), lambda x, xp: xp * np.sinh(x))
+tanh = get_function('tanh', lambda x: np.tanh(x), lambda x, xp: xp * (1 / np.cosh(x))**2)
+logistic = get_function('logistic', lambda x: np.exp(x) / (1 + np.exp(x)), lambda x, xp:
+                        np.exp(x) * xp / ((1 + np.exp(x)) ** 2))
+sqrt = get_function('sqrt', lambda x: np.sqrt(x), lambda x, xp: xp / (2 * np.sqrt(x)))
 
 
 # here is our main class
@@ -118,7 +130,8 @@ class Node:
     # we set the node type based on the properties that were passed in
     # we set the nodes left and right children to None
     def __init__(self, var_name=None, value=None,
-                 function=None, derivative=None):
+                 function=None, derivative=None,
+                 function_name=None):
         """This is the constructor of our Node class.
 
             arguments:
@@ -132,18 +145,19 @@ class Node:
         self.value = value
         if not var_name is None:
             self.type = 'var'
-            self.deriv = 1
+            self.deriv = None
         elif value != None:
             self.type = 'const'
-            self.deriv = 0
+            self.deriv = None
         else:
             self.type = 'inter'
-            self.deriv = 0
+            self.deriv = None
 
         # A node can have a function and a derivative
         # these are applied as we traverse the graph in reverse order
         self.function = function
         self.derivative = derivative
+        self.function_name = function_name
         self.left = None
         self.right = None
 
@@ -167,25 +181,38 @@ class Node:
         # our tree
         Node.get_variables(self, vars)
 
+        if 'wrt' in kwargs:
+            if not set(kwargs['wrt']) < vars:
+                raise ValueError('Variables specified in wrt do not match the variables in the equation')
+        else:
+            wrt = kwargs.keys()
+
         # check to see if the variable types are numeric
         for key, val in kwargs.items():
-            if not (isinstance(val, int) or isinstance(val, float)):
-                raise ValueError(f'Attempting to assign a non-numeric value to variable {key}:{val}')
+            if key != 'wrt':
+                if not (isinstance(val, int) or isinstance(val, float)):
+                    raise ValueError(f'Attempting to assign a non-numeric value to variable {key}:{val}')
 
-        # if the variables
-        if kwargs.keys() != vars:
+        # if the variables do not match, raise an error
+        supplied_vars = set(kwargs.keys()) - set(['wrt'])
+        print (supplied_vars)
+        if supplied_vars != vars:
             print ('variables do not match')
             print (f'the variables in this tree are {vars}')
             print (f'the variables supplied by eval are {set(kwargs.keys())}')
-            return None
+            raise ValueError('Supplied variables do not match those in the equation.')
 
         # now we recursively traverse through the tree in postorder
         # computing the value and derivative along the way
-        Node.eval_post(self, kwargs)
+        Node.eval_post(self, kwargs, wrt)
         # return the value and the derivative
         return {'value': self.value, 'derivative': self.deriv}
 
     # this is the multiplication operator overload
+
+
+
+
     def __mul__(self, other):
         """This function overloads the multiplication operator
 
@@ -353,8 +380,6 @@ class Node:
 
         return val
 
-
-
     # our generic power function
     # this is a static method that will be called from __pow__ and __rpow__
     @staticmethod
@@ -498,11 +523,12 @@ class Node:
             Node.print_postorder(root.right)
             print(root)
 
+
     # this function traverses the tree in postorder and
     # computes the primary and tangent traces
     # keeping track of both the value and the derivative
     @staticmethod
-    def eval_post(root, var_values):
+    def eval_post(root, var_values, wrt):
         """This our primary recursive computation engine for lazy evaluation.
         Our binary tree is traversed and the primary and tangent traces are updated
         in postorder.  All of the existing symbolic variables are substituted with
@@ -514,21 +540,49 @@ class Node:
         var_values -- the list of variable values supplied to the call to eval
         """
         if root:
-            Node.eval_post(root.left, var_values)
-            Node.eval_post(root.right, var_values)
+            Node.eval_post(root.left, var_values, wrt)
+            Node.eval_post(root.right, var_values, wrt)
             # if a function is attached to this node, we apply it to the
             # children
             # this works similar to activation functions in neural networks
             if root.function:
+                root.deriv = var_values.copy()
                 if root.right is None:
-                    root.value = root.function(root.left.value)
-                    root.deriv = root.derivative(root.left.value, root.left.deriv)
+                    try:
+                        root.value = root.function(root.left.value)
+                    except:
+                        raise ValueError(f'Incorrect number of arguments supplied to function: {root.function_name}')
+                    for key, value in root.left.deriv.items():
+                        root.deriv[key] = root.derivative(root.left.value, value)
                 else:
                     root.value = root.function(root.left.value, root.right.value)
-                    root.deriv = root.derivative(root.left.value, root.right.value,
-                                                 root.left.deriv, root.right.deriv)
+                    for key in root.left.deriv.keys():
+                        root.deriv[key] = root.derivative(root.left.value, root.right.value,
+                                                          root.left.deriv[key], root.right.deriv[key])
             # if we have a variable, we set the node value to the value
             # that was set in the eval call
             elif root.var_name:
                 root.value = var_values[root.var_name]
-                root.deriv = 1
+                # here make a dictionary to store our derivatives
+                root.deriv = {}
+                for key in wrt:
+                    if key == root.var_name:
+                        root.deriv[key] = 1
+                    else:
+                        root.deriv[key] = 0
+            # TODO turn this into enum
+            elif root.type == 'const':
+                root.deriv = {}
+                for key in wrt:
+                    root.deriv[key] = 0
+
+if __name__ == '__main__':
+    x = var('x')
+    y = var('y')
+    z = var('z')
+
+    f = log(2, x) * arcsin(y) * exp(z)
+    print (f.eval(x=2, y=.1, z=4, wrt = ['x', 'y']))
+
+    f = logistic(x)
+    print (f.eval(x=.1))
