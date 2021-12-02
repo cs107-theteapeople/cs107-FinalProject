@@ -383,7 +383,7 @@ class Node:
              raise ValueError('The derivative of a negative value raised to the specified power does not exist')
 
         else:
-            return (x ** (y - 1)) * (y * xp + x * np.log(x) * yp, '^')
+            return (x ** (y - 1)) * (y * xp + x * np.log(x) * yp)
 
     @staticmethod
     def _power_func(x,y):
@@ -607,8 +607,11 @@ if __name__ == '__main__':
     z = var('z')
     q = var('q')
 
+    import math
+    f = math.e ** x
+    assert f.eval(x=2)
 
-    f = exp(tan(6) + sin(6) * cos(4) ** 2 +  logistic(cos(x * y)) + arctan(sin(z * x / 4) + 2 - 1) + 4.2) * cosh(q)
+    #f = exp(tan(6) + sin(6) * cos(4) ** 2 +  logistic(cos(x * y)) + arctan(sin(z * x / 4) + 2 - 1) + 4.2) * cosh(q)
     #f.eval(x=2, y=2, z=2, q=1)
-    print(f.eval(x = 2, y = 2, z = 2, q =  1, plot = 'animate'))
-    f.print()
+    #print(f.eval(x = 2, y = 2, z = 2, q =  1, plot = 'animate'))
+    #f.print()
