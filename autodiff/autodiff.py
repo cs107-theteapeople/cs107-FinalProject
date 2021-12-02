@@ -7,6 +7,7 @@ import visualizer
 
 # our dependencies
 import numpy as np
+import imageio
 
 # this is a closure that allows to define a new function
 # that can be used with autodiff
@@ -185,7 +186,10 @@ class Node:
         """
 
         # see if the user requested plotting
-        plot = 'plot' in kwargs
+        if 'plot' in kwargs:
+            plot = kwargs['plot']
+        else:
+            plot = False
 
         vars = set()
         # the first thing we do is determine what variables are defined in
@@ -198,8 +202,9 @@ class Node:
         if 'wrt' in kwargs:
             if not set(kwargs['wrt']) < vars:
                 raise ValueError('Variables specified in wrt do not match the variables in the equation')
+            wrt = kwargs['wrt']
         else:
-            wrt = kwargs.keys()
+            wrt = supplied_vars
 
         # check to see if the variable types are numeric
         for key, val in kwargs.items():
@@ -214,21 +219,26 @@ class Node:
             print (f'the variables supplied by eval are {supplied_vars}')
             raise ValueError('Supplied variables do not match those in the equation.')
 
-        if plot:
-            # add the depths and an order of the nodes for plotting
-            depth_counts = []
-            visualizer.get_depths_order_and_labels(self, depth_counts)
-            visualizer.get_node_positions(self, depth_counts, np.max(depth_counts))
-            fontsize = visualizer.prepare_plot(depth_counts)
-            visualizer.render_edges(self, fontsize = fontsize)
-            visualizer.render_points(self, fontsize = fontsize)
-            visualizer.render_values(self, fontsize = fontsize)
-            visualizer.conclude_plot()
-
-
         # now we recursively traverse through the tree in postorder
         # computing the value and derivative along the way
-        Node.eval_post(self, kwargs, wrt)
+        if plot:
+            # add the depths and an order of the nodes for plotting
+            image, fig, font_size, depth_counts = visualizer.render(self)
+            images = [image]
+            Node.eval_post(self, kwargs, wrt, images, self, fig, font_size, depth_counts)
+            file_path = plot
+            print()
+            # pause the video a bit at the end
+            for i in range(6):
+                images.append(images[-1])
+
+            print (f'saving render to {file_path}')
+            imageio.mimsave(file_path, images, fps=2)
+            print ()
+
+        else:
+            Node.eval_post(self, kwargs, wrt)
+
         # return the value and the derivative
         return {'value': self.value, 'derivative': self.deriv}
 
@@ -553,7 +563,8 @@ class Node:
     # computes the primary and tangent traces
     # keeping track of both the value and the derivative
     @staticmethod
-    def eval_post(root, var_values, wrt):
+    def eval_post(root, var_values, wrt, images = None, root_render = None,
+                  fig = None, font_size = None, depth_counts = None):
         """This our primary recursive computation engine for lazy evaluation.
         Our binary tree is traversed and the primary and tangent traces are updated
         in postorder.  All of the existing symbolic variables are substituted with
@@ -565,23 +576,23 @@ class Node:
         var_values -- the list of variable values supplied to the call to eval
         """
         if root:
-            Node.eval_post(root.left, var_values, wrt)
-            Node.eval_post(root.right, var_values, wrt)
+            Node.eval_post(root.left, var_values, wrt, images, root_render, fig, font_size, depth_counts)
+            Node.eval_post(root.right, var_values, wrt, images, root_render, fig, font_size, depth_counts)
             # if a function is attached to this node, we apply it to the
             # children
             # this works similar to activation functions in neural networks
             if root.function:
-                root.deriv = var_values.copy()
+                root.deriv = {}
                 if root.right is None:
                     try:
                         root.value = root.function(root.left.value)
                     except:
                         raise ValueError(f'Incorrect number of arguments supplied to function: {root.function_name}')
-                    for key, value in root.left.deriv.items():
-                        root.deriv[key] = root.derivative(root.left.value, value)
+                    for key in wrt:
+                        root.deriv[key] = root.derivative(root.left.value, root.left.deriv[key])
                 else:
                     root.value = root.function(root.left.value, root.right.value)
-                    for key in root.left.deriv.keys():
+                    for key in wrt:
                         root.deriv[key] = root.derivative(root.left.value, root.right.value,
                                                           root.left.deriv[key], root.right.deriv[key])
             # if we have a variable, we set the node value to the value
@@ -601,17 +612,14 @@ class Node:
                 for key in wrt:
                     root.deriv[key] = 0
 
+            if images:
+                images.extend(visualizer.frame(root_render, fig, font_size, depth_counts, root))
+
 if __name__ == '__main__':
     x = var('x')
     y = var('y')
     z = var('z')
-    q = var('q')
+    q = var('q1')
 
-    import math
-    f = math.e ** x
-    assert f.eval(x=2)
-
-    #f = exp(tan(6) + sin(6) * cos(4) ** 2 +  logistic(cos(x * y)) + arctan(sin(z * x / 4) + 2 - 1) + 4.2) * cosh(q)
-    #f.eval(x=2, y=2, z=2, q=1)
-    #print(f.eval(x = 2, y = 2, z = 2, q =  1, plot = 'animate'))
-    #f.print()
+    f = exp(tan(z) + arctan(sin(6) * cos(4)) ** 2 +  logistic(cos(x * y))) - q**cos(x)
+    print(f.eval(x = 2, y = 2, z = 2, q1 = .1, plot = 'c:/temp/david.gif'))
