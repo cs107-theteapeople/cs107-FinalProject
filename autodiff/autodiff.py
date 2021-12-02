@@ -2,6 +2,9 @@
 # AC207 final project
 # Fall 2021
 
+# the visualization extension
+import visualizer
+
 # our dependencies
 import numpy as np
 
@@ -161,6 +164,10 @@ class Node:
         self.left = None
         self.right = None
 
+        # used for visualization
+        self.order = 0
+        self.depth = 0
+
     # this function recursively evaluates a binary tree starting at
     # a root node
     def eval(self, **kwargs):
@@ -176,10 +183,17 @@ class Node:
            Once this check has passed, we traverse the graph and perform the needed
            evaluations.
         """
+
+        # see if the user requested plotting
+        plot = 'plot' in kwargs
+
         vars = set()
         # the first thing we do is determine what variables are defined in
         # our tree
         Node.get_variables(self, vars)
+
+        # we remove the keywords from the set of supplied variables
+        supplied_vars = set(kwargs.keys()) - {'wrt', 'plot'}
 
         if 'wrt' in kwargs:
             if not set(kwargs['wrt']) < vars:
@@ -189,18 +203,28 @@ class Node:
 
         # check to see if the variable types are numeric
         for key, val in kwargs.items():
-            if key != 'wrt':
+            if key in supplied_vars:
                 if not (isinstance(val, int) or isinstance(val, float)):
                     raise ValueError(f'Attempting to assign a non-numeric value to variable {key}:{val}')
 
         # if the variables do not match, raise an error
-        supplied_vars = set(kwargs.keys()) - set(['wrt'])
-        print (supplied_vars)
         if supplied_vars != vars:
             print ('variables do not match')
             print (f'the variables in this tree are {vars}')
-            print (f'the variables supplied by eval are {set(kwargs.keys())}')
+            print (f'the variables supplied by eval are {supplied_vars}')
             raise ValueError('Supplied variables do not match those in the equation.')
+
+        if plot:
+            # add the depths and an order of the nodes for plotting
+            depth_counts = []
+            visualizer.get_depths_order_and_labels(self, depth_counts)
+            visualizer.get_node_positions(self, depth_counts, np.max(depth_counts))
+            fontsize = visualizer.prepare_plot(depth_counts)
+            visualizer.render_edges(self, fontsize = fontsize)
+            visualizer.render_points(self, fontsize = fontsize)
+            visualizer.render_values(self, fontsize = fontsize)
+            visualizer.conclude_plot()
+
 
         # now we recursively traverse through the tree in postorder
         # computing the value and derivative along the way
@@ -208,11 +232,8 @@ class Node:
         # return the value and the derivative
         return {'value': self.value, 'derivative': self.deriv}
 
+
     # this is the multiplication operator overload
-
-
-
-
     def __mul__(self, other):
         """This function overloads the multiplication operator
 
@@ -222,7 +243,7 @@ class Node:
         """
         # we apply the multiplication function to these two nodes
         new_node = Node(None, None, np.multiply,
-                        lambda x,y,xp,yp: x*yp + y*xp)
+                        lambda x,y,xp,yp: x*yp + y*xp, 'x')
         # set the child nodes
         new_node.left = self
         if isinstance(other, Node):
@@ -241,7 +262,7 @@ class Node:
            """
         # we apply the division function to these two nodes
         new_node = Node(None, None, lambda x,y: x/y,
-                        lambda x,y,xp,yp: ((y * xp - x * yp) / (y**2)))
+                        lambda x,y,xp,yp: ((y * xp - x * yp) / (y**2)), '/')
         # set the child nodes
         new_node.left = self
         if isinstance(other, Node):
@@ -260,7 +281,7 @@ class Node:
            """
         # we apply the divide function in reverse order
         new_node = Node(None, None, lambda x,y: y/x,
-                        lambda x,y,xp,yp: ((x * yp - y * xp) / (x**2)))
+                        lambda x,y,xp,yp: ((x * yp - y * xp) / (x**2)), '/')
         # set the child nodes
         new_node.left = self
         new_node.right = Node(value=other)
@@ -287,7 +308,7 @@ class Node:
            other -- the other node or numeric value (both are supported)
            """
         # we apply the add function to these two nodes
-        new_node = Node(None, None, np.add, lambda x,y,xp,yp: xp + yp )
+        new_node = Node(None, None, np.add, lambda x,y,xp,yp: xp + yp, '+' )
         new_node.left = self
         if isinstance(other, Node):
             new_node.right = other
@@ -317,7 +338,7 @@ class Node:
            other -- the other node or numeric value (both are supported)
            """
         # we apply the add function to these two nodes
-        new_node = Node(None, None, np.subtract, lambda x,y,xp,yp: xp - yp )
+        new_node = Node(None, None, np.subtract, lambda x,y,xp,yp: xp - yp, '-' )
         new_node.left = self
         if isinstance(other, Node):
             new_node.right = other
@@ -335,7 +356,7 @@ class Node:
            other -- the other node or numeric value (both are supported)
            """
         # we apply the add function to these two nodes
-        new_node = Node(None, None, lambda x,y: y-x, lambda x,y,xp,yp: yp - xp)
+        new_node = Node(None, None, lambda x,y: y-x, lambda x,y,xp,yp: yp - xp, '-')
         new_node.left = self
         new_node.right = Node(value=other)
 
@@ -393,7 +414,7 @@ class Node:
         right -- the right object which can be a node or a numeric value
         """
 
-        new_node = Node(None, None, Node._power_func, Node._power_deriv)
+        new_node = Node(None, None, Node._power_func, Node._power_deriv, '^')
         # set the child nodes
         if isinstance(left, Node):
             new_node.left = left
@@ -436,7 +457,7 @@ class Node:
         self -- the current node
         """
         new_node = Node(None, None, lambda x: -x,
-                        lambda x,xp: -xp)
+                        lambda x,xp: -xp, 'negation')
 
         new_node.left = self
         return new_node
@@ -451,11 +472,13 @@ class Node:
         if self.type == 'inter':
             rv = f'[type:{self.type} ' \
                 f'value:{self.value} ' \
-                f'deriv:{self.deriv} ' \
-                f'function:{self.function.__name__}]'
+                f'function:{self.function.__name__} ' \
+                f'depth:{self.depth} ' \
+                f'order:{self.order}]'
         else:
             rv = f' (type:{self.type} name:{self.var_name} ' \
-                f'value:{self.value} deriv:{self.deriv})'
+                f'value:{self.value} ' \
+                f'order:{self.order}) '
         return rv
 
     # print the binary tree in preorder
@@ -486,6 +509,8 @@ class Node:
                 vars.add(root.var_name)
             Node.get_variables(root.left, vars)
             Node.get_variables(root.right, vars)
+
+
 
     # print the tree in preorder recursively
     @staticmethod
@@ -570,7 +595,7 @@ class Node:
                         root.deriv[key] = 1
                     else:
                         root.deriv[key] = 0
-            # TODO turn this into enum
+
             elif root.type == 'const':
                 root.deriv = {}
                 for key in wrt:
@@ -580,9 +605,13 @@ if __name__ == '__main__':
     x = var('x')
     y = var('y')
     z = var('z')
+    q = var('q')
 
-    f = log(2, x) * arcsin(y) * exp(z)
-    print (f.eval(x=2, y=.1, z=4, wrt = ['x', 'y']))
+    import math
+    f = math.e ** x
+    assert f.eval(x=2)
 
-    f = logistic(x)
-    print (f.eval(x=.1))
+    #f = exp(tan(6) + sin(6) * cos(4) ** 2 +  logistic(cos(x * y)) + arctan(sin(z * x / 4) + 2 - 1) + 4.2) * cosh(q)
+    #f.eval(x=2, y=2, z=2, q=1)
+    #print(f.eval(x = 2, y = 2, z = 2, q =  1, plot = 'animate'))
+    #f.print()
