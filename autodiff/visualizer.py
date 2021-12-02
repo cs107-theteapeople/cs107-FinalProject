@@ -55,15 +55,15 @@ def get_node_positions(root, counts, max_count):
         root.plot_x = root.depth
         root.plot_y = root.order + y_min
 
-def render_edges(root):
+def render_edges(root, fontsize = 16):
     """This function renders the edges of the nodes in ourgraph.
 
       arguments:
       root -- the root node to start from
     """
     if root:
-        render_edges(root.left)
-        render_edges(root.right)
+        render_edges(root.left, fontsize=fontsize)
+        render_edges(root.right, fontsize=fontsize)
 
         if root.left:
             plt.plot( (root.plot_x, root.left.plot_x),
@@ -72,7 +72,7 @@ def render_edges(root):
                 # add a label
                 label_x = .6 * root.plot_x + .4 * root.left.plot_x
                 label_y = .6 * root.plot_y + .4 * root.left.plot_y
-                plt.text(label_x, label_y, root.function_name, fontdict={'size': 16, 'color': 'green'},
+                plt.text(label_x, label_y, root.function_name, fontdict={'size': fontsize, 'color': 'green'},
                          bbox={'facecolor': 'black', 'alpha': 0.9, 'edgecolor': 'gray', 'pad': 1},
                          ha='center', va='center')
 
@@ -84,11 +84,11 @@ def render_edges(root):
                 # add a label
                 label_x = .6 * root.plot_x + .4 * root.right.plot_x
                 label_y = .6 * root.plot_y + .4 * root.right.plot_y
-                plt.text(label_x, label_y, root.function_name, fontdict={'size': 16, 'color': 'green'},
+                plt.text(label_x, label_y, root.function_name, fontdict={'size': fontsize, 'color': 'green'},
                          bbox={'facecolor': 'black', 'alpha': 0.9, 'edgecolor': 'gray', 'pad': 1},
                          ha='center', va='center')
 
-def render_values(root):
+def render_values(root, fontsize=16):
     """This function renders the nodes at their calculated positions based on their
     type.
 
@@ -96,19 +96,20 @@ def render_values(root):
     root -- the root node to start from
     """
     if root:
-        render_values(root.left)
-        render_values(root.right)
+        render_values(root.left, fontsize=fontsize)
+        render_values(root.right, fontsize=fontsize)
 
-        if isinstance(root.value, int):
-            text = f'={root.value}'
-        else:
-            text = f'={root.value:.3f}'
+        if root.value:
+            if isinstance(root.value, int):
+                text = f'={root.value}'
+            else:
+                text = f'={root.value:.3f}'
 
-        plt.text(root.plot_x + .2, root.plot_y - .2, text, fontdict={'size':16, 'color':'yellow'},
-                 bbox={'facecolor':'black','alpha':0.7,'edgecolor':'white','pad':1},
-                 ha='center', va='center')
+            plt.text(root.plot_x + .2, root.plot_y - .2, text, fontdict={'size':fontsize, 'color':'yellow'},
+                     bbox={'facecolor':'black','alpha':0.7,'edgecolor':'white','pad':1},
+                     ha='center', va='center')
 
-def render_points(root):
+def render_points(root, fontsize=16):
     """This function renders the nodes at their calculated positions based on their
     type.
 
@@ -116,8 +117,8 @@ def render_points(root):
     root -- the root node to start from
     """
     if root:
-        render_points(root.left)
-        render_points(root.right)
+        render_points(root.left, fontsize=fontsize)
+        render_points(root.right, fontsize=fontsize)
 
         if root.type == 'inter':
             shape = plt.Circle( (root.plot_x, root.plot_y), radius=0.2,
@@ -129,7 +130,7 @@ def render_points(root):
             shape = plt.Rectangle((root.plot_x-.2, root.plot_y-.2),
                                   .4, .4, fc='purple', ec='pink', lw=1)
         plt.gca().add_patch(shape)
-        plt.text(root.plot_x, root.plot_y, root.label, fontdict={'size':16, 'color':'white'},
+        plt.text(root.plot_x, root.plot_y, root.label, fontdict={'size':fontsize, 'color':'white'},
                  bbox={'facecolor':'black','alpha':0.7,'edgecolor':'gray','pad':1},
                  ha='center', va='center')
 
@@ -156,6 +157,10 @@ def prepare_plot(depth_counts):
     for i in np.arange(0, max_order - 0.75, 0.5):
         plt.plot((0, max_depth-1), (i, i), c=(0.1, 0.1, 0.1),
                  zorder=-2)
+
+    fontsize = 18 - len(depth_counts)
+    print (fontsize)
+    return fontsize
 
 def conclude_plot():
     plt.show()

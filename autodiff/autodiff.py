@@ -210,8 +210,8 @@ class Node:
         # if the variables do not match, raise an error
         if supplied_vars != vars:
             print ('variables do not match')
-            print (f'the variables in this tree are {supplied_vars}')
-            print (f'the variables supplied by eval are {set(kwargs.keys())}')
+            print (f'the variables in this tree are {vars}')
+            print (f'the variables supplied by eval are {supplied_vars}')
             raise ValueError('Supplied variables do not match those in the equation.')
 
         if plot:
@@ -219,10 +219,10 @@ class Node:
             depth_counts = []
             visualizer.get_depths_order_and_labels(self, depth_counts)
             visualizer.get_node_positions(self, depth_counts, np.max(depth_counts))
-            visualizer.prepare_plot(depth_counts)
-            visualizer.render_edges(self)
-            visualizer.render_points(self)
-            visualizer.render_values(self)
+            fontsize = visualizer.prepare_plot(depth_counts)
+            visualizer.render_edges(self, fontsize = fontsize)
+            visualizer.render_points(self, fontsize = fontsize)
+            visualizer.render_values(self, fontsize = fontsize)
             visualizer.conclude_plot()
 
 
@@ -605,8 +605,10 @@ if __name__ == '__main__':
     x = var('x')
     y = var('y')
     z = var('z')
+    q = var('q')
 
-    f = logistic(cos(x * y)) + sin(z / 4)
-    f.eval(x=2, y=2, z=2)
-    print(f.eval(x = 2, y = 2, z = 2, plot = 'static'))
+
+    f = exp(tan(6) + sin(6) * cos(4) ** 2 +  logistic(cos(x * y)) + arctan(sin(z * x / 4) + 2 - 1) + 4.2) * cosh(q)
+    #f.eval(x=2, y=2, z=2, q=1)
+    print(f.eval(x = 2, y = 2, z = 2, q =  1, plot = 'animate'))
     f.print()
