@@ -373,11 +373,12 @@ def test_visualizer():
     print(f.eval(x=1, y=1, z=2, plot = 'animate'))
     f.print()
 
-def test_function():
+def test_wrt():
     x = ad.var('x')
     y = ad.var('y')
     f = ad.exp(x+y)
-    f.eval(x=1, y=2)
+    with pytest.raises(ValueError):
+        f.eval(x=1, y=2, wrt=['z', 'q'])
     
     
     
