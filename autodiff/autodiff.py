@@ -670,3 +670,4 @@ class Node:
                 images.extend(visualizer.frame(root_render, fig, font_size, depth_counts, root))
 
 
+
