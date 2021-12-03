@@ -200,9 +200,24 @@ class Node:
         supplied_vars = set(kwargs.keys()) - {'wrt', 'plot'}
 
         if 'wrt' in kwargs:
-            if not set(kwargs['wrt']) < vars:
+
+            # the user may supply a list of strings, a list of variables, or a mix of both
+            # let's convert this uniformly to a list of strings
+
+            wrt_pre = kwargs['wrt']
+            wrt = []
+            for item in wrt_pre:
+                if not (isinstance(item, Node) or isinstance(item, str)):
+                    raise ValueError('Incorrect type supplied to wrt')
+                if isinstance(item, Node):
+                    if not item.var_name:
+                        raise ValueError('Incorrect type supplied to wrt')
+                    wrt.append(item.var_name)
+                else:
+                    wrt.append(item)
+
+            if not set(wrt) <= vars:
                 raise ValueError('Variables specified in wrt do not match the variables in the equation')
-            wrt = kwargs['wrt']
         else:
             wrt = supplied_vars
 
@@ -448,6 +463,40 @@ class Node:
         new_node = Node._power(self, other)
         return new_node
 
+    # overloaded less than operator
+    def __lt__(self, other):
+        """This function overloads the less than operator
+
+               arguments:
+               self -- the current node
+               other -- the other node or numeric value (both are supported)
+               """
+        # we apply the add function to these two nodes
+        new_node = Node(None, None, lambda x,y: int(x < y), lambda x, y, xp, yp: 0, '<')
+        new_node.left = self
+        if isinstance(other, Node):
+            new_node.right = other
+        else:
+            new_node.right = Node(value=other)
+        return new_node
+
+    # overloaded less than operator
+    def __gt__(self, other):
+        """This function overloads the greater than operator
+
+               arguments:
+               self -- the current node
+               other -- the other node or numeric value (both are supported)
+               """
+        # we apply the add function to these two nodes
+        new_node = Node(None, None, lambda x, y: int(x > y), lambda x, y, xp, yp: 0, '>')
+        new_node.left = self
+        if isinstance(other, Node):
+            new_node.right = other
+        else:
+            new_node.right = Node(value=other)
+        return new_node
+
     # the power function with self as the exponent
     def __rpow__(self, other):
         """This function overloads the right power operator
@@ -521,7 +570,6 @@ class Node:
             Node.get_variables(root.right, vars)
 
 
-
     # print the tree in preorder recursively
     @staticmethod
     def print_preorder(root):
@@ -591,7 +639,11 @@ class Node:
                     for key in wrt:
                         root.deriv[key] = root.derivative(root.left.value, root.left.deriv[key])
                 else:
-                    root.value = root.function(root.left.value, root.right.value)
+                    try:
+                        root.value = root.function(root.left.value, root.right.value)
+                    except:
+                        raise ValueError(f'Incorrect number of arguments supplied to function: {root.function_name}')
+
                     for key in wrt:
                         root.deriv[key] = root.derivative(root.left.value, root.right.value,
                                                           root.left.deriv[key], root.right.deriv[key])
@@ -607,11 +659,13 @@ class Node:
                     else:
                         root.deriv[key] = 0
 
+            # if the node is a constant, we set the derivatives to 0
             elif root.type == 'const':
                 root.deriv = {}
                 for key in wrt:
                     root.deriv[key] = 0
 
+            # append the frame to the movie
             if images:
                 images.extend(visualizer.frame(root_render, fig, font_size, depth_counts, root))
 
@@ -621,5 +675,7 @@ if __name__ == '__main__':
     z = var('z')
     q = var('q1')
 
-    f = exp(tan(z) + arctan(sin(6) * cos(4)) ** 2 +  logistic(cos(x * y))) - q**cos(x)
-    print(f.eval(x = 2, y = 2, z = 2, q1 = .1, plot = 'c:/temp/david.gif'))
+    f = cos(x)
+    print (f.eval(x = 2, plot = 'c:/temp/equals.gif'))
+    #f = cos(x) < sin(z)
+    #print(f.eval(x = 2, z = 2, plot = 'c:/temp/equals.gif', wrt = [z, 'x']))
