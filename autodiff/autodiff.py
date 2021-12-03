@@ -669,13 +669,4 @@ class Node:
             if images:
                 images.extend(visualizer.frame(root_render, fig, font_size, depth_counts, root))
 
-if __name__ == '__main__':
-    x = var('x')
-    y = var('y')
-    z = var('z')
-    q = var('q1')
 
-    f = cos(x)
-    print (f.eval(x = 2, plot = 'c:/temp/equals.gif'))
-    #f = cos(x) < sin(z)
-    #print(f.eval(x = 2, z = 2, plot = 'c:/temp/equals.gif', wrt = [z, 'x']))
