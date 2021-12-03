@@ -362,3 +362,14 @@ def test_enter_bad_values():
     with pytest.raises(ValueError):
         f.eval(x='Chicken!')
 
+def test_visualizer():
+    x = ad.var('x')
+    y = ad.var('y')
+    z = ad.var('z')
+    
+    f = ad.exp(x**y+z)
+    results = f.eval(x=1, y=1, z=2)
+    assert results['value'] == math.exp(3) and results['derivative']['x'] == math.exp(3) and results['derivative']['y'] ==  0 and results['derivative']['z'] == math.exp(3)   
+    print(f.eval(x=1, y=1, z=2, plot = 'animate'))
+    f.print()
+    
