@@ -600,18 +600,3 @@ class Node:
                 root.deriv = {}
                 for key in wrt:
                     root.deriv[key] = 0
-
-if __name__ == '__main__':
-    x = var('x')
-    y = var('y')
-    z = var('z')
-    q = var('q')
-
-    import math
-    f = math.e ** x
-    assert f.eval(x=2)
-
-    #f = exp(tan(6) + sin(6) * cos(4) ** 2 +  logistic(cos(x * y)) + arctan(sin(z * x / 4) + 2 - 1) + 4.2) * cosh(q)
-    #f.eval(x=2, y=2, z=2, q=1)
-    #print(f.eval(x = 2, y = 2, z = 2, q =  1, plot = 'animate'))
-    #f.print()
