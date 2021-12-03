@@ -376,7 +376,7 @@ def test_visualizer():
 def test_function():
     x = ad.var('x')
     y = ad.var('y')
-    f = ad.exp(x, y)
+    f = ad.exp(x+y)
     f.eval(x=1, y=2)
     
     
