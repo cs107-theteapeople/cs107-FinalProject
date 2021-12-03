@@ -367,9 +367,19 @@ def test_visualizer():
     y = ad.var('y')
     z = ad.var('z')
     
-    f = ad.exp(x**y+z)
+    f = ad.exp(x**y+z+3+0.5)
     results = f.eval(x=1, y=1, z=2)
-    assert results['value'] == math.exp(3) and results['derivative']['x'] == math.exp(3) and results['derivative']['y'] ==  0 and results['derivative']['z'] == math.exp(3)   
+    assert results['value'] == math.exp(6.5) and results['derivative']['x'] == math.exp(6.5) and results['derivative']['y'] ==  0 and results['derivative']['z'] == math.exp(6.5)   
     print(f.eval(x=1, y=1, z=2, plot = 'animate'))
     f.print()
+
+def test_function():
+    x = ad.var('x')
+    y = ad.var('y')
+    f = ad.exp(x, y)
+    f.eval(x=1, y=2)
+    
+    
+    
+    
     
