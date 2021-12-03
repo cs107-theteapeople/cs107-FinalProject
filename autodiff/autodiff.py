@@ -7,6 +7,7 @@ import visualizer
 
 # our dependencies
 import numpy as np
+import imageio
 
 # this is a closure that allows to define a new function
 # that can be used with autodiff
@@ -185,7 +186,10 @@ class Node:
         """
 
         # see if the user requested plotting
-        plot = 'plot' in kwargs
+        if 'plot' in kwargs:
+            plot = kwargs['plot']
+        else:
+            plot = False
 
         vars = set()
         # the first thing we do is determine what variables are defined in
@@ -196,10 +200,26 @@ class Node:
         supplied_vars = set(kwargs.keys()) - {'wrt', 'plot'}
 
         if 'wrt' in kwargs:
-            if not set(kwargs['wrt']) < vars:
+
+            # the user may supply a list of strings, a list of variables, or a mix of both
+            # let's convert this uniformly to a list of strings
+
+            wrt_pre = kwargs['wrt']
+            wrt = []
+            for item in wrt_pre:
+                if not (isinstance(item, Node) or isinstance(item, str)):
+                    raise ValueError('Incorrect type supplied to wrt')
+                if isinstance(item, Node):
+                    if not item.var_name:
+                        raise ValueError('Incorrect type supplied to wrt')
+                    wrt.append(item.var_name)
+                else:
+                    wrt.append(item)
+
+            if not set(wrt) <= vars:
                 raise ValueError('Variables specified in wrt do not match the variables in the equation')
         else:
-            wrt = kwargs.keys()
+            wrt = supplied_vars
 
         # check to see if the variable types are numeric
         for key, val in kwargs.items():
@@ -214,21 +234,26 @@ class Node:
             print (f'the variables supplied by eval are {supplied_vars}')
             raise ValueError('Supplied variables do not match those in the equation.')
 
-        if plot:
-            # add the depths and an order of the nodes for plotting
-            depth_counts = []
-            visualizer.get_depths_order_and_labels(self, depth_counts)
-            visualizer.get_node_positions(self, depth_counts, np.max(depth_counts))
-            fontsize = visualizer.prepare_plot(depth_counts)
-            visualizer.render_edges(self, fontsize = fontsize)
-            visualizer.render_points(self, fontsize = fontsize)
-            visualizer.render_values(self, fontsize = fontsize)
-            visualizer.conclude_plot()
-
-
         # now we recursively traverse through the tree in postorder
         # computing the value and derivative along the way
-        Node.eval_post(self, kwargs, wrt)
+        if plot:
+            # add the depths and an order of the nodes for plotting
+            image, fig, font_size, depth_counts = visualizer.render(self)
+            images = [image]
+            Node.eval_post(self, kwargs, wrt, images, self, fig, font_size, depth_counts)
+            file_path = plot
+            print()
+            # pause the video a bit at the end
+            for i in range(6):
+                images.append(images[-1])
+
+            print (f'saving render to {file_path}')
+            imageio.mimsave(file_path, images, fps=2)
+            print ()
+
+        else:
+            Node.eval_post(self, kwargs, wrt)
+
         # return the value and the derivative
         return {'value': self.value, 'derivative': self.deriv}
 
@@ -438,6 +463,40 @@ class Node:
         new_node = Node._power(self, other)
         return new_node
 
+    # overloaded less than operator
+    def __lt__(self, other):
+        """This function overloads the less than operator
+
+               arguments:
+               self -- the current node
+               other -- the other node or numeric value (both are supported)
+               """
+        # we apply the add function to these two nodes
+        new_node = Node(None, None, lambda x,y: int(x < y), lambda x, y, xp, yp: 0, '<')
+        new_node.left = self
+        if isinstance(other, Node):
+            new_node.right = other
+        else:
+            new_node.right = Node(value=other)
+        return new_node
+
+    # overloaded less than operator
+    def __gt__(self, other):
+        """This function overloads the greater than operator
+
+               arguments:
+               self -- the current node
+               other -- the other node or numeric value (both are supported)
+               """
+        # we apply the add function to these two nodes
+        new_node = Node(None, None, lambda x, y: int(x > y), lambda x, y, xp, yp: 0, '>')
+        new_node.left = self
+        if isinstance(other, Node):
+            new_node.right = other
+        else:
+            new_node.right = Node(value=other)
+        return new_node
+
     # the power function with self as the exponent
     def __rpow__(self, other):
         """This function overloads the right power operator
@@ -511,7 +570,6 @@ class Node:
             Node.get_variables(root.right, vars)
 
 
-
     # print the tree in preorder recursively
     @staticmethod
     def print_preorder(root):
@@ -553,7 +611,8 @@ class Node:
     # computes the primary and tangent traces
     # keeping track of both the value and the derivative
     @staticmethod
-    def eval_post(root, var_values, wrt):
+    def eval_post(root, var_values, wrt, images = None, root_render = None,
+                  fig = None, font_size = None, depth_counts = None):
         """This our primary recursive computation engine for lazy evaluation.
         Our binary tree is traversed and the primary and tangent traces are updated
         in postorder.  All of the existing symbolic variables are substituted with
@@ -565,23 +624,27 @@ class Node:
         var_values -- the list of variable values supplied to the call to eval
         """
         if root:
-            Node.eval_post(root.left, var_values, wrt)
-            Node.eval_post(root.right, var_values, wrt)
+            Node.eval_post(root.left, var_values, wrt, images, root_render, fig, font_size, depth_counts)
+            Node.eval_post(root.right, var_values, wrt, images, root_render, fig, font_size, depth_counts)
             # if a function is attached to this node, we apply it to the
             # children
             # this works similar to activation functions in neural networks
             if root.function:
-                root.deriv = var_values.copy()
+                root.deriv = {}
                 if root.right is None:
                     try:
                         root.value = root.function(root.left.value)
                     except:
                         raise ValueError(f'Incorrect number of arguments supplied to function: {root.function_name}')
-                    for key, value in root.left.deriv.items():
-                        root.deriv[key] = root.derivative(root.left.value, value)
+                    for key in wrt:
+                        root.deriv[key] = root.derivative(root.left.value, root.left.deriv[key])
                 else:
-                    root.value = root.function(root.left.value, root.right.value)
-                    for key in root.left.deriv.keys():
+                    try:
+                        root.value = root.function(root.left.value, root.right.value)
+                    except:
+                        raise ValueError(f'Incorrect number of arguments supplied to function: {root.function_name}')
+
+                    for key in wrt:
                         root.deriv[key] = root.derivative(root.left.value, root.right.value,
                                                           root.left.deriv[key], root.right.deriv[key])
             # if we have a variable, we set the node value to the value
@@ -596,7 +659,15 @@ class Node:
                     else:
                         root.deriv[key] = 0
 
+            # if the node is a constant, we set the derivatives to 0
             elif root.type == 'const':
                 root.deriv = {}
                 for key in wrt:
                     root.deriv[key] = 0
+
+            # append the frame to the movie
+            if images:
+                images.extend(visualizer.frame(root_render, fig, font_size, depth_counts, root))
+
+
+
