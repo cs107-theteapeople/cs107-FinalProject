@@ -231,8 +231,14 @@ class Node:
         if supplied_vars != vars:
             print ('variables do not match')
             print (f'the variables in this tree are {vars}')
-            print (f'the variables supplied by eval are {supplied_vars}')
+            if len(supplied_vars) == 0:
+                print (f'no variables were supplied to eval')
+            else:
+                print (f'the variables supplied by eval are {supplied_vars}')
             raise ValueError('Supplied variables do not match those in the equation.')
+
+        # let's reset the values and derivatives in the tree
+        Node.reset(self)
 
         # now we recursively traverse through the tree in postorder
         # computing the value and derivative along the way
@@ -552,7 +558,19 @@ class Node:
         """
         self.print_preorder(self)
 
-    # this function is recursively called too get a set
+    # this function is recursively called to reset
+    # all of the variables and derivatives in the tree
+    @staticmethod
+    def reset(root):
+        if root:
+            if root.type != 'const':
+                # we reset the value and deriv for the new graph traversal
+                root.value = None
+                root.deriv = None
+            Node.reset(root.left)
+            Node.reset(root.right)
+
+    # this function is recursively called to get a set
     # of all variables that are in the tree
     @staticmethod
     def get_variables(root, vars):
@@ -636,6 +654,9 @@ class Node:
                         root.value = root.function(root.left.value)
                     except:
                         raise ValueError(f'Incorrect number of arguments supplied to function: {root.function_name}')
+                    if np.isnan(root.value):
+                        raise ValueError(f'Invalid value encountered in function: {root.function_name}')
+
                     for key in wrt:
                         root.deriv[key] = root.derivative(root.left.value, root.left.deriv[key])
                 else:
@@ -643,7 +664,8 @@ class Node:
                         root.value = root.function(root.left.value, root.right.value)
                     except:
                         raise ValueError(f'Incorrect number of arguments supplied to function: {root.function_name}')
-
+                    if np.isnan(root.value):
+                        raise ValueError(f'Invalid value encountered in function: {root.function_name}')
                     for key in wrt:
                         root.deriv[key] = root.derivative(root.left.value, root.right.value,
                                                           root.left.deriv[key], root.right.deriv[key])
@@ -669,5 +691,76 @@ class Node:
             if images:
                 images.extend(visualizer.frame(root_render, fig, font_size, depth_counts, root))
 
+# this our main function to evaluate functions with vector outputs
+# for each output, we call the eval method of that node
+# to use the visualizer on a particular output, run the eval member function on that node
+def eval( nodes , **kwargs):
+    if not (isinstance(nodes, list) or isinstance(nodes, Node)):
+        raise ValueError('Please specify a node or list of nodes as the first argument to eval')
 
+    if 'plot' in kwargs:
+        raise ValueError('rendering is only supported for a single output (otherwise the plot gets very busy).'
+                         'Please select a single node that you would like to render.')
+
+    # convert the input to a list if only one Node is found
+    if isinstance(nodes, Node):
+        nodes = [nodes]
+
+    if 'wrt' in kwargs:
+        wrt_pre = kwargs['wrt']
+    else:
+        wrt_pre = set(kwargs.keys()) - {'wrt'}
+
+    # we need to convert this to a list of variable names so that we can
+    # do the needed intersection against each output node
+    wrt = []
+    for item in wrt_pre:
+        if not (isinstance(item, Node) or isinstance(item, str)):
+            raise ValueError('Incorrect type supplied to wrt')
+        if isinstance(item, Node):
+            if not item.var_name:
+                raise ValueError('Incorrect type supplied to wrt')
+            wrt.append(item.var_name)
+        else:
+            wrt.append(item)
+
+    # let's build a list of varables within each node and then a master set
+    # of all available variables to check that the inputs are correct
+    vars = []
+    for node in nodes:
+        local_vars = set()
+        Node.get_variables(node, local_vars)
+        vars.append(local_vars)
+
+    all_vars = set.union(*vars)
+
+    # check to make sure our inputs match the full set of possible variables
+    supplied_vars = set(kwargs.keys()) - {'wrt'}
+    if not (supplied_vars == all_vars):
+        raise ValueError('Please specify values for every variable that is present in this vector valued function, '
+                         'and only variables that appear in the function.')
+
+    if not set(wrt) <= all_vars:
+        raise ValueError('An variable was supplied to wrt that is not in the function')
+
+    # store our list of results
+    results = []
+    for node, lvars in zip(nodes, vars):
+        # for each node, we determine the variables that belong to the binary tree corresponding
+        # to the node, perform an intersection of the variables, and supply these variables and
+        # (optionally) the wrt parameter to the eval member function of each node to
+        # generate the vector output.
+
+        # grab the variables for this subset
+        var_values = {i: kwargs[i] for i in lvars}
+
+        supplied_wrt = []
+        for w in wrt:
+            if w in lvars:
+                supplied_wrt.append(w)
+
+        # evaluate the node and append our results
+        results.append(node.eval( **var_values, wrt = supplied_wrt))
+
+    return results
 
