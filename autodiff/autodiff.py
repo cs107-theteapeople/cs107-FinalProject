@@ -8,6 +8,7 @@ import visualizer
 # our dependencies
 import numpy as np
 import imageio
+import warnings
 
 # this is a closure that allows to define a new function
 # that can be used with autodiff
@@ -171,7 +172,7 @@ class Node:
 
     # this function recursively evaluates a binary tree starting at
     # a root node
-    def eval(self, **kwargs):
+    def evaluate(self, **kwargs):
         """This is the main function of our Node object to traverse the graph
            and perform the necessary calculations.  We traverse the binary graph
            in postorder and update the values and derivatives as we traverse the
@@ -205,13 +206,19 @@ class Node:
             # let's convert this uniformly to a list of strings
 
             wrt_pre = kwargs['wrt']
+
+            if not (isinstance(wrt_pre, list)):
+                raise ValueError('Incorrect type supplied to wrt. '
+                                 'Please supply a list of variables or strings of variable names')
             wrt = []
+
+
             for item in wrt_pre:
                 if not (isinstance(item, Node) or isinstance(item, str)):
                     raise ValueError('Incorrect type supplied to wrt')
                 if isinstance(item, Node):
                     if not item.var_name:
-                        raise ValueError('Incorrect type supplied to wrt')
+                        raise ValueError('Incorrect node type supplied to wrt.  Please supply a variable.')
                     wrt.append(item.var_name)
                 else:
                     wrt.append(item)
@@ -231,10 +238,8 @@ class Node:
         if supplied_vars != vars:
             print ('variables do not match')
             print (f'the variables in this tree are {vars}')
-            if len(supplied_vars) == 0:
-                print (f'no variables were supplied to eval')
-            else:
-                print (f'the variables supplied by eval are {supplied_vars}')
+
+            print (f'the variables supplied by evaluate are {supplied_vars}')
             raise ValueError('Supplied variables do not match those in the equation.')
 
         # let's reset the values and derivatives in the tree
@@ -244,7 +249,7 @@ class Node:
         # computing the value and derivative along the way
         if plot:
             # add the depths and an order of the nodes for plotting
-            image, fig, font_size, depth_counts = visualizer.render(self)
+            image, fig, font_size, depth_counts = visualizer.render_first_frame(self)
             images = [image]
             Node.eval_post(self, kwargs, wrt, images, self, fig, font_size, depth_counts)
             file_path = plot
@@ -486,7 +491,7 @@ class Node:
             new_node.right = Node(value=other)
         return new_node
 
-    # overloaded less than operator
+    # overloaded greater than operator
     def __gt__(self, other):
         """This function overloads the greater than operator
 
@@ -496,6 +501,40 @@ class Node:
                """
         # we apply the add function to these two nodes
         new_node = Node(None, None, lambda x, y: int(x > y), lambda x, y, xp, yp: 0, '>')
+        new_node.left = self
+        if isinstance(other, Node):
+            new_node.right = other
+        else:
+            new_node.right = Node(value=other)
+        return new_node
+
+    # overloaded less than or equal operator
+    def __le__(self, other):
+        """This function overloads the less than or equal operator
+
+               arguments:
+               self -- the current node
+               other -- the other node or numeric value (both are supported)
+               """
+        # we apply the add function to these two nodes
+        new_node = Node(None, None, lambda x,y: int(x <= y), lambda x, y, xp, yp: 0, '<=')
+        new_node.left = self
+        if isinstance(other, Node):
+            new_node.right = other
+        else:
+            new_node.right = Node(value=other)
+        return new_node
+
+    # overloaded greater than or equal operator
+    def __ge__(self, other):
+        """This function overloads the greater than or equal operator
+
+               arguments:
+               self -- the current node
+               other -- the other node or numeric value (both are supported)
+               """
+        # we apply the add function to these two nodes
+        new_node = Node(None, None, lambda x, y: int(x >= y), lambda x, y, xp, yp: 0, '>=')
         new_node.left = self
         if isinstance(other, Node):
             new_node.right = other
@@ -651,7 +690,10 @@ class Node:
                 root.deriv = {}
                 if root.right is None:
                     try:
-                        root.value = root.function(root.left.value)
+                        # disable invalid value warnings since we catch them later
+                        with warnings.catch_warnings():
+                            warnings.simplefilter("ignore")
+                            root.value = root.function(root.left.value)
                     except:
                         raise ValueError(f'Incorrect number of arguments supplied to function: {root.function_name}')
                     if np.isnan(root.value):
@@ -661,7 +703,10 @@ class Node:
                         root.deriv[key] = root.derivative(root.left.value, root.left.deriv[key])
                 else:
                     try:
-                        root.value = root.function(root.left.value, root.right.value)
+                        # disable invalid value warnings since we catch them later
+                        with warnings.catch_warnings():
+                            warnings.simplefilter("ignore")
+                            root.value = root.function(root.left.value, root.right.value)
                     except:
                         raise ValueError(f'Incorrect number of arguments supplied to function: {root.function_name}')
                     if np.isnan(root.value):
@@ -694,7 +739,7 @@ class Node:
 # this our main function to evaluate functions with vector outputs
 # for each output, we call the eval method of that node
 # to use the visualizer on a particular output, run the eval member function on that node
-def eval( nodes , **kwargs):
+def evaluate( nodes , **kwargs):
     if not (isinstance(nodes, list) or isinstance(nodes, Node)):
         raise ValueError('Please specify a node or list of nodes as the first argument to eval')
 
@@ -709,7 +754,10 @@ def eval( nodes , **kwargs):
     if 'wrt' in kwargs:
         wrt_pre = kwargs['wrt']
     else:
-        wrt_pre = set(kwargs.keys()) - {'wrt'}
+        wrt_pre = list(set(kwargs.keys()) - {'wrt'})
+
+    if not isinstance(wrt_pre, list):
+        raise ValueError('Please supply a list of variables or strings for the wrt argument')
 
     # we need to convert this to a list of variable names so that we can
     # do the needed intersection against each output node
@@ -760,7 +808,7 @@ def eval( nodes , **kwargs):
                 supplied_wrt.append(w)
 
         # evaluate the node and append our results
-        results.append(node.eval( **var_values, wrt = supplied_wrt))
+        results.append(node.evaluate( **var_values, wrt = supplied_wrt))
 
     return results
 

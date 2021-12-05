@@ -1,7 +1,19 @@
+import matplotlib
+matplotlib.use('agg')
 import matplotlib.pyplot as plt
+import sys
 import numpy as np
 
-def render(root):
+def render_first_frame(root):
+    """This function renders the first frame of our animation.  For the first frame, the node depths and
+        positions for plotting in the binary tree are calculated, we create a matplotlib figure for animation,
+        and prepare for future frames.  The node depths and positions are stored in each node object.
+
+       arguments:
+       root -- the root of our binary tree
+       """
+
+
     print ('rendering forward computation graph')
 
     depth_counts = []
@@ -24,9 +36,23 @@ def render(root):
     return image, fig, font_size, depth_counts
 
 def frame(root, fig, font_size, depth_counts, visit):
+    """This function renders a frame of our animation based on the given binary tree, the current
+       visit node, the figure generated in prepare_plot, the depth_counts, the current visit node
+       and the node positions that were cxalculated.
+
+       arguments:
+       root -- the root of our binary tree
+       fig -- a matplotlib figure object
+       font_size -- the font size to use for this frame.  This is used to render the edges, values, and nodes
+       depth_counts -- a list containing the number of nodes at each depth
+       visit -- The current node to render the legend values for.  The value and all
+       relevant derivatives are taken from the node attributes.
+       """
+
 
     images = []
     print('.', end='')
+    sys.stdout.flush()
     for inner_frame in np.linspace(0, 1, 4):
         plt.cla()
         render_grid(depth_counts, visit)
@@ -41,6 +67,14 @@ def frame(root, fig, font_size, depth_counts, visit):
     return images
 
 def render_legend(visit):
+    """This function renders a legend showing the current value and derivatives at the given
+      'visit' node.  As the binary tree traversal occurs, the value and the derivatives are updated
+      to show the current values.
+
+       arguments:
+       visit -- The current node to render the legend values for.  The value and all
+       relevant derivatives are taken from the node attributes.
+       """
     if visit.deriv:
         legend_entries = [f'df/d{key} = {value:.3f}' for key, value in visit.deriv.items()]
         legend_entries.append(f'value: {visit.value:0.3f}')
@@ -102,11 +136,16 @@ def get_depths_order_and_labels(root, counts):
 
 def get_node_positions(root, counts, max_count):
     """This function computes node positions given the calculated
-    depths and order information.
+    depths and order information.  We create a custom node position
+    based on a partial ordering that is computed from the maximum
+    depth of a node to a constant or vector.
 
     arguments:
     root -- the root node to start from
     count -- a list of integers for the count of nodes at each depth
+    max_count -- the maximum count of nodes in any depth.  This is used to determine
+    the ideal positions of the nodes within each depth.  We attempt to scatter the nodes
+    so that they don't get in the way of edges.
     """
 
     if root:
@@ -119,11 +158,19 @@ def get_node_positions(root, counts, max_count):
         root.plot_x = root.depth
         root.plot_y = root.order + y_min
 
+
 def render_edges(root, font_size = 16, visit=None, inner_frame = 1.0):
-    """This function renders the edges of the nodes in ourgraph.
+    """This function renders the edges of the nodes in our graph.  These are animated
+    based on the current node 'visit' and the inner frame from 0 to 1 to show movement
+    along the graph.
 
       arguments:
-      root -- the root node to start from
+      root -- the root node to start rendering the binary tree from
+      font_size -- the font size to use for the render.  More complex functions require smaller
+                   font sizes for the labeled functions.
+      visit -- the currently visited node.  This the child edges attached to this node are
+               highlighted and animated based on the inner frame value
+      inner_frame -- a value from 0 to 1 used for animating the edges
     """
     if root:
         render_edges(root.left, font_size=font_size, visit = visit, inner_frame = inner_frame)
@@ -182,6 +229,10 @@ def render_values(root, font_size=16, visit = None, inner_frame = 1.0):
 
     arguments:
     root -- the root node to start from
+    font_size -- the font size to render the values with.  Larger functions need to use a smaller font.
+    visit -- the current node to highlight
+    inner_frame -- the sub frame of the animation used to render highlighted lines.  The value will only
+                    displayed when the inner frame is close to 1.
     """
     if root:
         render_values(root.left, font_size=font_size, visit = visit, inner_frame = inner_frame)
@@ -204,6 +255,9 @@ def render_points(root, font_size=16, visit = None):
 
     arguments:
     root -- the root node to start from
+    font_size -- optionally specify the font size to use. For larger functions, we want
+                 to use a smaller font size
+    visit -- the current node that we are visiting.  This node will be highlighted.
     """
     if root:
         render_points(root.left, font_size=font_size, visit = visit)
@@ -232,6 +286,12 @@ def render_points(root, font_size=16, visit = None):
                  ha='center', va='center')
 
 def prepare_plot(depth_counts):
+    """This function prepares our plot for rendering.  It creates a figure, turns off the axes,
+    and sets the appropriate limits based on the depth counts.
+
+    arguments:
+    depth_counts -- a list of the number of nodes per each depth
+    """
     fig = plt.figure( figsize = (10, 10), dpi=100)
     fig.patch.set_facecolor('black')
     plt.rc('axes', edgecolor='darkgray')
@@ -247,6 +307,16 @@ def prepare_plot(depth_counts):
     return fig, fontsize
 
 def render_grid(depth_counts, visit=None):
+    """This function renders the background grid for our forward graph.  We
+    use the depth counts, the number of nodes per each depth to determine the
+    grid placement.  If visis is not None, we highlight that particular row
+    and column.
+
+    arguments:
+    depth_counts -- a list of the number of nodes per each depth
+    visit -- the current visited node used for grid highlighting
+    """
+
     max_order = np.max(depth_counts)
     max_depth = len(depth_counts)
 
