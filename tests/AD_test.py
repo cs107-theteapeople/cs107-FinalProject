@@ -110,6 +110,11 @@ def test_cos():
     f = ad.cos(x)
     assert f.evaluate(x=1) == {'value': np.cos(1), 'derivative': {'x': -np.sin(1)}}, "Error: incorrect cosine function"
 
+    assert f.evaluate(x=1 , wrt = [x]) == {'value': np.cos(1), 
+                                           'derivative': {'x': -np.sin(1)}}, "Error: incorrect cosine function"
+
+    with pytest.raises(ValueError):
+        f.evaluate(x=2, wrt=[3])
 
 def test_tan():
     # test the tangent function
@@ -575,7 +580,7 @@ def test_greater_than_or_equal():
     results = f.evaluate(x=2)
     assert results['value'] == 1 and results['derivative']['x'] == 0
 
-def test_incorrect_arguments_to_vector():
+def test_incorrect_arguments_types():
     # test various incorrect arguments to the global evaluate function
     x = ad.var('x')
     y = ad.var('y')
@@ -588,6 +593,13 @@ def test_incorrect_arguments_to_vector():
         ad.evaluate(f, x=.2, y=.1, wrt=x)
 
     with pytest.raises(ValueError):
+        # wrt should only contain variables
+        ad.evaluate(f, x=.2, y=.1, wrt=[f])
+
+    with pytest.raises(ValueError):
+        f[0].evaluate(x=.2, wrt=[f[0]])
+
+    with pytest.raises(ValueError):
         # plotting is not supported for vector outputs
         ad.evaluate(f, x=.2, y=.1, plot = 'test.gif')
 
@@ -595,7 +607,32 @@ def test_incorrect_arguments_to_vector():
     assert( np.isclose(results[0]['value'],.3))
 
     with pytest.raises(ValueError):
-        # passing in a string is not allowed
+        # plotting only works for scalar outputs
         ad.evaluate("f", x=.2, y=.1, plot = 'test.gif')
+
+    with pytest.raises(ValueError):
+        # test no variable arguments being supplied
+        ad.evaluate(f)
+
+    with pytest.raises(ValueError):
+        # test no variables supplied to single node
+        f[0].evaluate()
+
+    with pytest.raises(ValueError):
+        # incorrect type supplied to wrt
+        f[0].evaluate(x=0.1, y=0.1, wrt=42)
+
+
+def test_nans():
+    # test functions that would return nans
+    # these should raise a ValueError
+    x = ad.var('x')
+    f = ad.log(2, x)
+    with pytest.raises(ValueError):
+        f.evaluate(x=-2)
+
+    f = ad.sqrt(x)
+    with pytest.raises(ValueError):
+        f.evaluate(x=-2)
 
 

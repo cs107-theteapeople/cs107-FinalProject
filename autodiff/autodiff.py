@@ -8,6 +8,7 @@ import visualizer
 # our dependencies
 import numpy as np
 import imageio
+import warnings
 
 # this is a closure that allows to define a new function
 # that can be used with autodiff
@@ -217,7 +218,7 @@ class Node:
                     raise ValueError('Incorrect type supplied to wrt')
                 if isinstance(item, Node):
                     if not item.var_name:
-                        raise ValueError('Incorrect type supplied to wrt')
+                        raise ValueError('Incorrect node type supplied to wrt.  Please supply a variable.')
                     wrt.append(item.var_name)
                 else:
                     wrt.append(item)
@@ -237,10 +238,8 @@ class Node:
         if supplied_vars != vars:
             print ('variables do not match')
             print (f'the variables in this tree are {vars}')
-            if len(supplied_vars) == 0:
-                print (f'no variables were supplied to evaluate')
-            else:
-                print (f'the variables supplied by evaluate are {supplied_vars}')
+
+            print (f'the variables supplied by evaluate are {supplied_vars}')
             raise ValueError('Supplied variables do not match those in the equation.')
 
         # let's reset the values and derivatives in the tree
@@ -691,7 +690,10 @@ class Node:
                 root.deriv = {}
                 if root.right is None:
                     try:
-                        root.value = root.function(root.left.value)
+                        # disable invalid value warnings since we catch them later
+                        with warnings.catch_warnings():
+                            warnings.simplefilter("ignore")
+                            root.value = root.function(root.left.value)
                     except:
                         raise ValueError(f'Incorrect number of arguments supplied to function: {root.function_name}')
                     if np.isnan(root.value):
@@ -701,7 +703,10 @@ class Node:
                         root.deriv[key] = root.derivative(root.left.value, root.left.deriv[key])
                 else:
                     try:
-                        root.value = root.function(root.left.value, root.right.value)
+                        # disable invalid value warnings since we catch them later
+                        with warnings.catch_warnings():
+                            warnings.simplefilter("ignore")
+                            root.value = root.function(root.left.value, root.right.value)
                     except:
                         raise ValueError(f'Incorrect number of arguments supplied to function: {root.function_name}')
                     if np.isnan(root.value):
