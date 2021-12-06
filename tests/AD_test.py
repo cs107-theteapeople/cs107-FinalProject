@@ -4,7 +4,7 @@ import numpy as np
 import sys
 import os
 
-sys.path.insert(1, './autodiff')
+sys.path.insert(1, './src/autodiff')
 import autodiff as ad
 
 def test_init_var():
