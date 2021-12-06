@@ -3,7 +3,7 @@
 # Fall 2021
 
 # the visualization extension
-import visualizer
+import autodiff.visualizer as visualizer
 
 # our dependencies
 import numpy as np
