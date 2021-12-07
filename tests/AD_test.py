@@ -123,6 +123,55 @@ def test_tan():
     assert f.evaluate(x=1) == {'value': np.tan(1),
                                'derivative': {'x': 1 / ((np.cos(1)) ** 2)}}, "Error: incorrect tangent function"
 
+def test_arcsin():
+    # test the tangent function
+    x = ad.var('x')
+    f = ad.arcsin(x)
+    assert f.evaluate(x=0.5) == {'value': np.arcsin(0.5),
+                               'derivative': {'x': 1 / np.sqrt(0.75)}}, "Error: incorrect arc-sin function"
+    ## Capture nan value with error, taking square root of a negative number
+    with pytest.raises(ValueError):
+        f.evaluate(x=10)
+
+def test_arccos():
+    # test the tangent function
+    x = ad.var('x')
+    f = ad.arccos(x)
+    assert f.evaluate(x=0.5) == {'value': np.arccos(0.5),
+                               'derivative': {'x': -1 / np.sqrt(0.75)}}, "Error: incorrect arc-cos function"
+    ## Capture nan value with error, taking square root of a negative number
+    with pytest.raises(ValueError):
+        f.evaluate(x=10)
+
+def test_arctan():
+    x = ad.var('x')
+    f = ad.arctan(x)
+    assert f.evaluate(x=10) == {'value': np.arctan(10),
+                               'derivative': {'x': 1 / 101}}, "Error: incorrect arc-tan function"
+
+def test_sinh():
+    x = ad.var('x')
+    f = ad.sinh(x)
+    assert f.evaluate(x=10) == {'value': np.sinh(10),
+                               'derivative': {'x': np.cosh(10)}}, "Error: incorrect sinh function"
+
+def test_cosh():
+    x = ad.var('x')
+    f = ad.cosh(x)
+    assert f.evaluate(x=10) == {'value': np.cosh(10),
+                               'derivative': {'x': np.sinh(10)}}, "Error: incorrect cosh function"
+
+def test_tanh():
+    x = ad.var('x')
+    f = ad.tanh(x)
+    assert f.evaluate(x=1) == {'value': np.tanh(1),
+                               'derivative': {'x': 1-(np.tanh(1))**2}}, "Error: incorrect tanh function"
+
+def test_logistic():
+    x = ad.var('x')
+    f = ad.logistic(x)
+    results = f.evaluate(x=5)
+    assert np.isclose(results['value'], 1/(1+math.e**(-5))) and np.isclose(results['derivative']['x'], math.e**(-5)/(1+math.e**(-5))**2)
 
 def test_evaluate_incorrect_var():
     # test to see if we enter incorrect variable names in evaluate
@@ -130,7 +179,6 @@ def test_evaluate_incorrect_var():
     f = x + 3
     with pytest.raises(ValueError):
         f.evaluate(y=3)
-
 
 def test_to_complex():
     # make sure we raise an exception when complex values would be created
@@ -354,7 +402,6 @@ def test_bad_constant():
     # this should raise an exception
     with pytest.raises(ValueError):
         c = ad.const('hello world')
-
 
 def test_self_divide():
     # test dividing a variable by itself.  This ends up as a constant
