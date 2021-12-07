@@ -39,7 +39,7 @@ The library requirement for our project are numpy, matplotlib, and imageio. Thes
 
 In the root directory of the repository, you can import the main autodiff module with the following code: 
 
-`from autodiff import autodiff as ad`
+`import autodiff as ad`
 
 The general structure of usage will be as follows:
 1. A user will instantiate a scalar variable using the autodiff module 
