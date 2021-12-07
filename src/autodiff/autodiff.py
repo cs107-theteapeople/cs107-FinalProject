@@ -3,7 +3,10 @@
 # Fall 2021
 
 # the visualization extension
-import visualizer
+try:
+    import autodiff.visualizer as visualizer
+except:
+    import visualizer as visualizer
 
 # our dependencies
 import numpy as np
@@ -106,8 +109,8 @@ ln =  get_function('ln',  lambda x : np.log(x), lambda x,xp: xp/x)
 arcsin = get_function('arcsin', lambda x: np.arcsin(x), lambda x,xp: xp / (np.sqrt( 1 - x**2 )))
 arccos = get_function('arccos', lambda x: np.arccos(x), lambda x,xp: - xp / (np.sqrt( 1 - x**2)))
 arctan = get_function('arctan', lambda x: np.arctan(x), lambda x,xp: xp / (x**2 + 1))
-cosh = get_function('sinh', lambda x: np.sinh(x), lambda x, xp: xp * np.cosh(x))
-sinh = get_function('cosh', lambda x: np.cosh(x), lambda x, xp: xp * np.sinh(x))
+sinh = get_function('sinh', lambda x: np.sinh(x), lambda x, xp: xp * np.cosh(x))
+cosh = get_function('cosh', lambda x: np.cosh(x), lambda x, xp: xp * np.sinh(x))
 tanh = get_function('tanh', lambda x: np.tanh(x), lambda x, xp: xp * (1 / np.cosh(x))**2)
 logistic = get_function('logistic', lambda x: np.exp(x) / (1 + np.exp(x)), lambda x, xp:
                         np.exp(x) * xp / ((1 + np.exp(x)) ** 2))
