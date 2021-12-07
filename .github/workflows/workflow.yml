@@ -24,7 +24,7 @@ jobs:
         pip install imageio
         python setup.py install
 
-        pytest --cov=./ --cov-report=xml
+        pytest --cov=./src/autodiff --cov-report=xml
     - name: Upload coverage to Codecov
       uses: codecov/codecov-action@v2
 

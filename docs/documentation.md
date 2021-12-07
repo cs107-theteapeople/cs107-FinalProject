@@ -31,9 +31,12 @@ In this project, we will be using forward mode. Forward mode is probably best un
 
 ![](p6.png).
 
-The animated computation graph for this polynomial looks like the following (this was rendered using our visualizer module [2]). 
+The animated computation graph for this polynomial looks like the following:  
 
-Our visualizer package visualizes the automatic differentiation process through creating animated forward mode graphs. Users can view how their input supplied functions are computed steps by steps from taking input values to generating final output values in the gif animation. 
+![width = 4cm](background_animate.gif)
+
+This was rendered using our visualizer module. Our visualizer package visualizes the automatic differentiation process y  constructing an animated forward computation graphs. Users can view how their supplied functions are computed step by step from input values to the final output values in the gif animation.     
+
 
 
 ![](background_animate.gif)
@@ -84,6 +87,7 @@ Here is an example of basic usage for the autodiff module.
 Instantiate scalar variables:
 
 `x = ad.var('x')`
+
 `y = ad.var('y')`
 
 Set user-defined composite functions that have vector valued outputs:
