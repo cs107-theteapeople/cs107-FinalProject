@@ -1,4 +1,4 @@
-name: orkflow for Codecov
+name: Workflow for Codecov
 on: [push]
 jobs:
   run:
@@ -22,6 +22,8 @@ jobs:
         pip install numpy
         pip install matplotlib
         pip install imageio
+        pip setup.py install
+
         pytest --cov=./ --cov-report=xml
     - name: Upload coverage to Codecov
       uses: codecov/codecov-action@v2
