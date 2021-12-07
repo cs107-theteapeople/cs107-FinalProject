@@ -22,7 +22,7 @@ jobs:
         pip install numpy
         pip install matplotlib
         pip install imageio
-        pip setup.py install
+        python setup.py install
 
         pytest --cov=./ --cov-report=xml
     - name: Upload coverage to Codecov
