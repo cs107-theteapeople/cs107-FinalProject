@@ -1,11 +1,9 @@
 import pytest
 import math
 import numpy as np
-import sys
 import os
 
-sys.path.insert(1, './src/autodiff')
-import autodiff as ad
+from autodiff import autodiff as ad
 
 def test_init_var():
     # test simple variable initialization
@@ -171,7 +169,28 @@ def test_logistic():
     x = ad.var('x')
     f = ad.logistic(x)
     results = f.evaluate(x=5)
-    assert np.isclose(results['value'], 1/(1+math.e**(-5))) and np.isclose(results['derivative']['x'], math.e**(-5)/(1+math.e**(-5))**2)
+    assert np.isclose(results['value'], 1/(1+math.e**(-5))) and np.isclose(results['derivative']['x'],
+                                                                           math.e**(-5)/(1+math.e**(-5))**2)
+
+def test_sqrt():
+    x = ad.var('x')
+    f = ad.sqrt(x)
+    results = f.evaluate(x=9.0)
+    assert np.isclose(results['value'], 3.0) and np.isclose(results['derivative']['x'], 1.0/6.0)
+
+def test_ln():
+    x = ad.var('x')
+    f = ad.ln(x)
+    results = f.evaluate(x=9.0)
+    assert np.isclose(results['value'], np.log(9.0)) and np.isclose(results['derivative']['x'], 1.0/9.0)
+
+def test_log():
+    x = ad.var('x')
+    f = ad.log(x, 2)
+    results = f.evaluate(x=4.0)
+    assert np.isclose(results['value'], 2.0) and np.isclose(results['derivative']['x'], 1.0 / np.log(16.0))
+
+
 
 def test_evaluate_incorrect_var():
     # test to see if we enter incorrect variable names in evaluate

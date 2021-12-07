@@ -3,10 +3,7 @@
 # Fall 2021
 
 # the visualization extension
-try:
-    import autodiff.visualizer as visualizer
-except:
-    import visualizer as visualizer
+from autodiff import visualizer
 
 # our dependencies
 import numpy as np
@@ -103,8 +100,10 @@ cos = get_function('cos', np.cos,   lambda x,xp : -xp * np.sin(x))
 exp = get_function('exp', np.exp,   lambda x,xp : xp * np.exp(x))
 tan = get_function('tan', np.tan,   lambda x,xp : xp * (1/np.cos(x))**2)
 add = get_function('add', lambda x,y: x+y, lambda x,y,xp,yp: xp + yp)
+
+# compute the log to any base (the second argument is the base)
 log = get_function('log', lambda x,y: np.log(x) / np.log(y), lambda x,y,xp,yp:
-                            (yp*np.log(x)/y - (np.log(y)*xp/x)) / (np.log(x)**2))
+                            (xp*np.log(y)/x - (np.log(x)*yp/y)) / (np.log(y)**2))
 ln =  get_function('ln',  lambda x : np.log(x), lambda x,xp: xp/x)
 arcsin = get_function('arcsin', lambda x: np.arcsin(x), lambda x,xp: xp / (np.sqrt( 1 - x**2 )))
 arccos = get_function('arccos', lambda x: np.arccos(x), lambda x,xp: - xp / (np.sqrt( 1 - x**2)))
@@ -115,7 +114,6 @@ tanh = get_function('tanh', lambda x: np.tanh(x), lambda x, xp: xp * (1 / np.cos
 logistic = get_function('logistic', lambda x: np.exp(x) / (1 + np.exp(x)), lambda x, xp:
                         np.exp(x) * xp / ((1 + np.exp(x)) ** 2))
 sqrt = get_function('sqrt', lambda x: np.sqrt(x), lambda x, xp: xp / (2 * np.sqrt(x)))
-
 
 # here is our main class
 # this class defines a node of a binary tree
