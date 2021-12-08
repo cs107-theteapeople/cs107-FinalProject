@@ -220,8 +220,10 @@ Once pytest is installed, within the root directory of the repository one can ru
 `python -m pytest`
 
 #### How will you distribute your package (e.g. PyPI)?
-###--- wait for pypi to be implemented
-Since this project only consists of python sources and doesn't need any files to be built, installation could be done by simply cloning the repository as described above.  We encourage users to play around with the code and even submit pull requests.  Our focus will be on code readability and learning, and we hope to make the code as understandable as possible so that users will be encouraged to modify the code and try new techniques.  As mentioned above, if appropriate, we will host our project on PyPI and allow users to install the software with pip.  
+
+Since this project only consists of python sources and doesn't need any files to be built, installation could be done by simply cloning the repository as described above.  We encourage users to play around with the code and even submit pull requests.  Our focus will be on code readability and learning, and we hope to make the code as understandable as possible so that users will be encouraged to modify the code and try new techniques.  
+
+We also host our project on PyPI and allow users to install the software with pip. The package name is `autodiffvis-teapeople`.
 
 #### How will you package your software? Will you use a framework? If so, which one and why? If not, why not?
 
@@ -250,8 +252,8 @@ Here are some example ways for a user to define a composite function (an instanc
 
 ```
 import autodiff as ad
-x1 = ad.var(‘x1’)
-x2 = ad.var(‘x2’)
+x1 = ad.var('x1')
+x2 = ad.var('x2')
 func1 = x1 + x2
 func2 = ad.cos( x1 * x2 ) 
 func3 = ad.sin( x1 ) + ad.cos( x2 ) * 4.0 
@@ -322,6 +324,8 @@ There several future features on our list which we would like to implement in th
 1. Support for arrays of variables. Even with vector functions supported, variables will need to be defined individually, i.e. `x1, x2, x3 = var('x1'), var('x2'), var('x3')...` This is quite cumbersome. We would like to add support for vectors of variables in the following manner. `x_array = var_array('x', 100)` which will generate an array of 99 variables. These can be referenced by using indices, `x[4]` to reference the 4th variable. Some applications of this include defining recursive functions, and working with finite series.
 
 2. We would like to implement a root finding algorithm using Newton's method. A function can be defined using the autodiff library, and then newton's method will solve for the roots of the given function. This will be iteratively using autodiff to efficiently compute derivatives. The lazy evaluation approach of our library lends itself quite well to a Newton solver, where the same equation (and its derivative) is evaluated over and over again.
+
+3. We would like to incorporate customizable features into our visualizer - users can adjust the colors, text, figure size, animation speed, etc. in the visualizer. This can help them present a more appealing visualization to their audience based on their needs.  
 
 
 ## References:
