@@ -23,7 +23,8 @@ This software package provides two libraries:
 To install the packages, you can either use PyPI or git clone.
 
 Use PyPI to install the packages:
-#-------------------------------wait for PyPI to be set up here------------------------------------#
+
+`pip install autodiffvis-teapeople`
 
 Use git clone to install the packages:
 
@@ -31,7 +32,7 @@ Use git clone to install the packages:
 
 Once you have cloned the code, navigate to the root directory of the repository.  In the above example, this would be `cs107-FinalProject`.  
 
-The library requirement for our project are numpy, matplotlib, and imageio. These can be installed with pip using the supplied requirements.txt file with the following command:
+The library requirement for our project are numpy(>=1.20.3), matplotlib(>=3.4.3), and imageio(>=2.9.0). These can be installed with pip using the supplied requirements.txt file with the following command:
 
 `pip install -r requirements.txt`
 
@@ -46,7 +47,7 @@ The general structure of usage will be as follows:
 2. A user will define a function by combining variables, constants, and primitive functions through various operations using the autodiff module. Our autodiff library supports vector functions input, which means that the user can pass in multiple functions concurrently. 
 3. Function value and derivatives will be calculated and returned for specific input points with respect to the specified variable using the `evaluate` function.  
  
-Here is an example of basic usage for the autodiff module. 
+Here is a toy example with a multi-variable vector function: 
 
 Instantiate scalar variables:
 
@@ -63,9 +64,14 @@ Evaluate the function and derivative with respect to x:
 print(ad.evaluate(f, x =.2, y =.1, wrt = [x]))
 ```
 
-This will return both the value and the derivative of this function with respect to x evaluated at the given points as a numpy array or scalar value within a dictionary. The autodiff library supports vector valued output. For example:
+This will return both the value and the derivative of this function with respect to x evaluated at the given points as a numpy array or scalar value within a dictionary:
 
-`[{'value': 0.020000000000000004, 'derivative': {'x': 0.1}}, {'value': 0.30000000000000004, 'derivative': {'x': 1}}, {'value': 0.2, 'derivative': {}}, {'value': 0.9950041652780258, 'derivative': {'x': -0.09983341664682815}}, {'value': 0.19739555984988078, 'derivative': {'x': 0.9615384615384615}}, {'value': 0.598687660112452, 'derivative': {'x': 0.24026074574152917}}]`
+`[{'value': 0.020000000000000004, 'derivative': {'x': 0.1}}, 
+{'value': 0.30000000000000004, 'derivative': {'x': 1}}, 
+{'value': 0.2, 'derivative': {}}, 
+{'value': 0.9950041652780258, 'derivative': {'x': -0.09983341664682815}}, 
+{'value': 0.19739555984988078, 'derivative': {'x': 0.9615384615384615}}, 
+{'value': 0.598687660112452, 'derivative': {'x': 0.24026074574152917}}]`
 
 ## Broader Impact and Inclusivity Statement
 

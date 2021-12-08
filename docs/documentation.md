@@ -55,7 +55,8 @@ A user will interact with the automatic differentiation functionality through th
 To install the packages, you can either use PyPI or git clone.
 
 Use PyPI to install the packages:
-[Temporary TestPyPI link](https://test.pypi.org/project/autodiffvis-teapeople/0.0.4/)
+
+`pip install autodiffvis-teapeople`
 
 Use git clone to install the packages:
 
@@ -63,23 +64,27 @@ Use git clone to install the packages:
 
 Once you have cloned the code, navigate to the root directory of the repository.  In the above example, this would be `cs107-FinalProject`.  
 
-The library requirement for our project are numpy,matplotlib,and imageio. These can be installed with pip using the supplied requirements.txt file
+The library requirement for our project are numpy(>=1.20.3), matplotlib(>=3.4.3), and imageio(>=2.9.0). These can be installed with pip using the supplied requirements.txt file
 with the following command.
 
 `pip install -r requirements.txt`
 
-### Usage
+### User Guide
 
-In the root directory of the repository, you can import the main autodiff module with the following code: 
+If the user downloads the package with PyPI, they can use it directly on Python3 with 
 
 `import autodiff as ad`
 
-The general structure of usage will be as follows:
+If the user git clone our project directory, they should navigate to the `src/autodiff` directory and import the main autodiff module with
+
+`import autodiff as ad`
+
+The general structure of usage follows:
 1. A user will instantiate a scalar variable using the autodiff module 
 2. A user will define a function by combining variables, constants, and primitive functions through various operations using the autodiff module. Our autodiff library supports vector functions input, which means that the user can pass in multiple functions concurrently. 
 3. Function value and derivatives will be calculated and returned for specific input points with respect to the specified variable using the `evaluate` function.  
  
-Here is an example of basic usage of the autodiff module for single function input. 
+The following is an example for single function input:
 
 Instantiate a scalar variable:
 
@@ -101,15 +106,13 @@ This will return both the value and the derivative of this function with respect
 
 `{'value': -3.027209981231713, 'derivative': -3.3713769787623757}`
 
-
-Here is an example of basic usage of the autodiff module for vector functions input.
+The following is an example for vector function input:
 
 Instantiate scalar variables:
 
 `x = ad.var('x')`
 
 `y = ad.var('y')`
-
 
 Set user-defined composite functions that have vector valued outputs:
 
@@ -123,14 +126,43 @@ print(ad.evaluate(f, x =.2, y =.1, wrt = [x]))
 
 This will return both the value and the derivative of this function with respect to x evaluated at the given points as a numpy array or scalar value within a dictionary. The autodiff library supports vector valued output. For example:
 
-`[{'value': 0.020000000000000004, 'derivative': {'x': 0.1}}, {'value': 0.30000000000000004, 'derivative': {'x': 1}}, {'value': 0.2, 'derivative': {}}, {'value': 0.9950041652780258, 'derivative': {'x': -0.09983341664682815}}, {'value': 0.19739555984988078, 'derivative': {'x': 0.9615384615384615}}, {'value': 0.598687660112452, 'derivative': {'x': 0.24026074574152917}}]`
+`[{'value': 0.020000000000000004, 'derivative': {'x': 0.1}}, 
+{'value': 0.30000000000000004, 'derivative': {'x': 1}}, 
+{'value': 0.2, 'derivative': {}}, 
+{'value': 0.9950041652780258, 'derivative': {'x': -0.09983341664682815}}, 
+{'value': 0.19739555984988078, 'derivative': {'x': 0.9615384615384615}}, 
+{'value': 0.598687660112452, 'derivative': {'x': 0.24026074574152917}}]`
 
 
 ## How to Use Visualizer
 
 The visualizer package comes along with the autodiff package when installing. It locates in the same folder as the autodiff package. It is imported into the autodiff package and is used as part of the autodiff module. Hence when you import autodiff module, the visualizer package will be automatically imported. 
 
-Here is an example of basic usage for the visualizer. 
+Below is an example of using visualizer for scalar-input function:
+
+Instantiate a scalar variable:
+
+```
+x = ad.var('x')
+```
+Set a user-defined function that has scalar valued outputs:
+
+```
+f = ad.exp(x*ad.sin(2*x))
+```
+
+Generate the animated visualization of the function evaluation processes:
+
+```
+print(f.evaluate(x=1, plot='filepath/animate_demo_scalar.gif'))
+f.print()
+```
+
+The animate_demo_scalar.gif file will be stored at the filepath the user specified in the plot argument.
+
+![](animate_demo_scalar.gif)
+
+Below is an example of using visualizer for vector-input function: 
 
 Instantiate scalar variables:
 
@@ -147,7 +179,7 @@ Set user-defined composite functions that have vector valued outputs:
 Generate the animated visualization of the function evaluation processes with respect to x,y,z:
 
 ```
-print(f.evaluate(x=1, y=1, z=2, plot='filepath/animate_demo.gif'))`
+print(f.evaluate(x=1, y=1, z=2, plot='filepath/animate_demo_scalar.gif'))
 f.print()
 ```
 
@@ -202,7 +234,7 @@ Our project will only consist of python sources and a few common dependencies.  
 
 A critical component of the **autodiff** module is the ability to define functions and input variables.  We use a model similar to sympy.  As mentioned in the ‘how to use autodiff’ section of this document, elementary functions will be defined in the autodiff module and these can be combined to make composite functions.  We make heavy use of operator overloading to allow users to conveniently define their composite functions.  Elementary functions will be Python functions within the autodiff module that generate simple intermediate node instances as described below.  
 
-Our autodiff library uses lazy evaluation.  The binary tree of nodes is built first and possible values are represented by variable nodes.  Once a binary tree is created when the function is defined, the tree can be traversed and the value of the function and the derivative of the function computed by using the `eval` function as described in the *how to use* section.  In this way, a single function can be defined, and then efficiently evaluated at any number of inputs.  In particular, this approach will be useful for our Newton solver.
+Our autodiff library uses lazy evaluation.  The binary tree of nodes is built first and possible values are represented by variable nodes.  Once a binary tree is created when the function is defined, the tree can be traversed and the value of the function and the derivative of the function computed by using the `evaluate` function as described in the *how to use* section.  In this way, a single function can be defined, and then efficiently evaluated at any number of inputs.  In particular, this approach will be useful for our Newton solver.
 
 ### Node class
 
@@ -217,7 +249,7 @@ Nodes will use operator overloading heavily to allow the user to build up compos
 Here are some example ways for a user to define a composite function (an instance of the Node class with children, or a list of instances).  
 
 ```
-from autodiff import autodiff as ad
+import autodiff as ad
 x1 = ad.var(‘x1’)
 x2 = ad.var(‘x2’)
 func1 = x1 + x2
@@ -225,12 +257,12 @@ func2 = ad.cos( x1 * x2 )
 func3 = ad.sin( x1 ) + ad.cos( x2 ) * 4.0 
 func4 = x1 ** 6  (operator overloading allows us to handle raising powers to reals or integers)
 func5 = [x1 * x2, x1 + x2] (functions with multiple outputs can be defined through lists)
-func6 = x1 ** (cos(x1) + 2 * x1) + 42
+func6 = x1 ** (ad.cos(x1) + 2 * x1) + 42
 ```
 
 ### Evaluation
 
-Once a composite function is defined, the `eval` function can be called to evaluate the function and compute the derivative of the function at the specified inputs efficiently.
+Once a composite function is defined, the `evaluate` function can be called to evaluate the function and compute the derivative of the function at the specified inputs efficiently.
 
 Inputs are entered as keyword arguments or a dictionary.  We match these inputs with the expected variables from the composite function corresponding to the Node.  If there is a mismatch in variables and expected inputs, we raise an appropriate error.  For array inputs, we will check to make sure the array sizes match the expected inputs as defined in the function.  Only numeric inputs are allowed.
 
@@ -257,7 +289,7 @@ Our module supports vector valued output functions, and thus our primary functio
 
 ### External Dependencies
 
-External dependencies include numpy,matplotlib,and imageio. The latter two libraries are used to plot and view the computation graphs.For efficient computation, we rely heavily on numpy to carry out the elementary function operations within each defined elementary function in autodiff. for example, for the primal trace and its corresponding tangent trace for ad.sin(), we would use np.sin() and np.cos() to carry out the operations respectively.  
+External dependencies include numpy(>=1.20.3), matplotlib(>=3.4.3), and imageio(>=2.9.0). The latter two libraries are used to plot and view the computation graphs. For efficient computation, we rely heavily on numpy to carry out the elementary function operations within each defined elementary function in autodiff. For example, for the primal trace and its corresponding tangent trace for ad.sin(), we would use np.sin() and np.cos() to carry out the operations respectively.  
 
 ## License:
 
@@ -268,7 +300,6 @@ After much consideration, we have settled on using the gnu GPLv3 license as it h
 We implemented several additional features in addition to the minimum implementation requirements:
 
 1. Support for multiple input variables - Our packages currently support both scalar functions as well as multiple inputs. We are able to keep track of all of our input variables and their corresponding derivatives during traversal to provide this support.  
-
 
 2. Support for multiple output values - Our packages currently support functions with both scalar outputs as well as vector outputs. We return all of these output values as a list of  dictionaries from the `evaluate` function.  
 
@@ -283,7 +314,6 @@ As one of the fundamental algorithms, automatic differentiation is used extensiv
 ### Inclusivity Statement
 
 Tea-people encourage users to modify the code and experiment with various techniques. We include elaborate documentation and detailed user guide so that users new to this package will not have a difficult time navigating the functionality of our package. As we are developing this package, the pull requests are reviewed and approved by every member of our team. We also welcome users to make pull requests and provide recommendations in every aspects of this software, from implementation, code efficiency, software organization, to additional features that would be great to include. Despite this package is written in English, we are still eager to hear different opinions from users in our diverse coding community. 
-
 
 
 ## Future
