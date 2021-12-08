@@ -33,13 +33,10 @@ In this project, we will be using forward mode. Forward mode is probably best un
 
 The animated computation graph for this polynomial looks like the following:  
 
-![width = 4cm](background_animate.gif)
+![](background_animate.gif)
 
 This was rendered using our visualizer module. Our visualizer package visualizes the automatic differentiation process y  constructing an animated forward computation graphs. Users can view how their supplied functions are computed step by step from input values to the final output values in the gif animation.     
 
-
-
-![](background_animate.gif)
 
 To compute the derivative with respect to x0 and x1 we follow the computation graph and compute the intermediate derivatives along the way using the chain rule mentioned above.  The following table show how the derivates with respect to x0 and x1 evaluated at x0 = 2 and x1 = 3 are computed.
 
@@ -82,13 +79,37 @@ The general structure of usage will be as follows:
 2. A user will define a function by combining variables, constants, and primitive functions through various operations using the autodiff module. Our autodiff library supports vector functions input, which means that the user can pass in multiple functions concurrently. 
 3. Function value and derivatives will be calculated and returned for specific input points with respect to the specified variable using the `evaluate` function.  
  
-Here is an example of basic usage for the autodiff module. 
+Here is an example of basic usage of the autodiff module for single function input. 
+
+Instantiate a scalar variable:
+
+`x = ad.var(‘x’)`
+
+Set a user-defined composite function:
+
+`f = ad.exp(ad.sin(x + 3 * x**2) * ad.cos(x))`
+
+Evaluate the function and derivative at multiple points:
+
+```
+import numpy as np
+for i in np.linspace(1,3,10):
+    print(f.eval(x=i))
+```
+
+This will return both the value and the derivative of this function with respect to x evaluated at the given points as a numpy array or scalar value within a dictionary.  For example:
+
+`{'value': -3.027209981231713, 'derivative': -3.3713769787623757}`
+
+
+Here is an example of basic usage of the autodiff module for vector functions input.
 
 Instantiate scalar variables:
 
 `x = ad.var('x')`
 
 `y = ad.var('y')`
+
 
 Set user-defined composite functions that have vector valued outputs:
 
