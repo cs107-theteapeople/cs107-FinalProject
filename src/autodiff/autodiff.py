@@ -260,7 +260,7 @@ class Node:
                 images.append(images[-1])
 
             print (f'saving render to {file_path}')
-            imageio.mimsave(file_path, images, fps=2)
+            imageio.mimsave(file_path, images, fps=2, format='GIF')
             print ()
 
         else:
