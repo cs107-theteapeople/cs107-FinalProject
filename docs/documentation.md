@@ -1,4 +1,4 @@
-#Documentation
+# Documentation
 ### AC 207 Fall 2021   
 
 #### David Berthiaume
@@ -44,7 +44,7 @@ In the 'Derivative' column, we are computing the derivative of the elementary op
 
  
 
-## How to Use Autodiff
+## How to use autodiff
 
 A user will interact with the automatic differentiation functionality through the autodiff module. This module uses automatic differentiation to calculate the Jacobian of a user supplied function. 
 
@@ -86,7 +86,7 @@ If you would like to run the tests (with coverage) and also make modifications t
 
 `pytest --cov=autodiff`
 
-### User Guide
+### User guide
 
 `import autodiff as ad`
 
@@ -132,7 +132,7 @@ Set user-defined composite functions that have vector valued outputs:
 Evaluate the function and derivative with respect to x:
   
 ```
-print(ad.evaluate(f, x =.2, y =.1, wrt = [x]))
+ad.evaluate(f, x =.2, y =.1, wrt = [x])
 ```
 
 This will return both the value and the derivative of this function with respect to x evaluated at the given points as a list of dictionaries. 
@@ -152,6 +152,21 @@ This will return both the value and the derivative of this function with respect
 Note the use of the `wrt` parameter argument.  This can be used to limit which derivatives are returned.  If this is not
 specified, all derivatives are returned for the function.  In this example above, it would return the derivative with respect to both x and y.
 
+### Advanced usage - seed dictionary
+
+A custom seed dictionary can be supplied to the evaluate method.  The following examples show how to use this functionality.
+
+```
+x = var('x')
+y = var('y')
+f = cos(x) + sin(y)
+f.evaluate(x=.1, y=.1, seed_dict={'x':1, 'y':2})
+f.evaluate(x=.1, y=.1, seed_dict={'x':0, 'y':1})
+f.evaluate(x=.1, y=.1, seed_dict={'x':0.7})
+f.evaluate(x=.1, y=.1, seed_dict={'y':0.7})
+```
+
+By default, if a seed value isn't supplied for a variable, it is set to 1 in that pass, meaning that the normal derivative is calculated for that variable.
 
 ### How to use the forward computation visualizer
 
@@ -197,7 +212,7 @@ Set the user-defined composite function
 Generate the animated visualization of the function evaluation processes with respect to x,y,z evaluated at x=1, y=1, and z=2:
 
 ```
-print(f.evaluate(x=1, y=1, z=2, plot='filepath/animate_demo_scalar.gif'))
+f.evaluate(x=1, y=1, z=2, plot='<filepath>/animate_demo_scalar.gif')
 ```
 
 The animate_demo.gif file will be stored at the filepath the user specified in the plot argument.
@@ -207,7 +222,7 @@ The animate_demo.gif file will be stored at the filepath the user specified in t
 The user is able to see the forward mode evaluation process, with values and traces of derivatives being displayed at each step. 
 
 
-## Software Organization
+## Software organization
 #### Summary
 
 For our code structure, we follow some of the suggestions outlined in class. It was suggested to not place our tests within our source modules.  For this project, we follow this approach.
@@ -234,7 +249,7 @@ To run the test suite, pytest must be installed.
 
 Once pytest is installed, within the root directory of the repository one can run the test suite with,
 
-`python -m pytest`
+`pytest`
 
 #### How will you distribute your package (e.g. PyPI)?
 
@@ -281,14 +296,14 @@ Once this function is called, the computation graph (created during function obj
 
 For functions with multiple inputs and/or outputs, we allow users to specify which derivatives they would like to compute through the `wrt` argument.  By default, we compute all derivatives and return the Jacobian.  
 
-### Adding New Functions
+### Adding new functions
 
 We have written a closure `get_function` that allows one to very easily add elementary functions to our autodiff library.  This closure returns a function that handles inserting the necessary nodes into the binary tree, defining the right types of node to insert, establishing the appropriate child nodes, and storing the primary and tangent functions.  
 
 The following is an example of using this closure to create the *tan* function.
 
 ```
-tan = get_function(np.tan,   lambda x,xp : xp * (1/np.cos(x))**2)
+tan = ad.get_function(np.tan, lambda x,xp : xp * (1/np.cos(x))**2)
 ```
 
 This closure takes two arguments.  The first one defines the function to evaluate and the second one defines the derivative of that function (using the chain rule).  In this example, the function 
@@ -324,42 +339,58 @@ The following built-in list of elementary functions are available in autodiff:
  - less than or equals (<=)
  - greater than or equals (>=)
 
-### External Dependencies
+### External dependencies
 
-External dependencies include numpy(>=1.20.3), matplotlib(>=3.4.3), and imageio(>=2.9.0). The latter two libraries are used to plot and view the computation graphs. For efficient computation, we rely heavily on numpy to carry out the elementary function operations within each defined elementary function in autodiff. For example, for the primal trace and its corresponding tangent trace for ad.sin(), we use np.sin() and np.cos() to carry out the operations respectively.  
+External dependencies include numpy(>=1.20.3), matplotlib(>=3.4.3), and imageio(>=2.9.0). The latter two libraries are used to plot and view the computation graphs. For efficient computation, we rely heavily on numpy to carry out the elementary function operations within each defined elementary function in autodiff. For example, for the primal trace and its corresponding tangent trace for ad.sin(), we use np.sin() and np.cos() to carry out the operations respectively. 
+
+## Extension
+### Visualization tool
+
+Our visualizer tool generates animated graphs of the forward mode binary tree and displays values and derivative traces as they are evaluated step by step. It is a very useful illustration of the inner workings of automatic differentiation as it is being applied.
+
+To generate an animated plot of the computation graph, one can use the `plot` argument of the evaluate function.  For example:
+
+```
+x = ad.var('x')
+y = ad.var('y')
+f = ad.exp(x ** y + z + 3 + 0.5)
+f.evaluate(x=1, plot='<filepath>/animate_demo_scalar.gif')
+```
+
+This will generate a plot and save it to the specified file.
+
+### How it was made
+
+Internally we use matplotlib to render our animations using low level primitives such as line segments, elipses, rectangles, and text.  Matplotlib performs antialiasing when rendering these primitives.  A custom node placement engine was created to arrange the nodes in a readable left to right format, similar to how one would read text (in English).  The left to right ordering of the nodes is based on the maximum distance between the node and any of its input variables or constants.
+
+After placement of the nodes, we generate edges of the graph by traversing the binary tree and creating line segments to the left and right children (if they exist) of each of these visited nodes.  These are internally stored for later animation.  
+
+As the computation graph is traversed, the nodes are highlighted in the binary tree and animations are applied to show the computations being applied in postorder.  We show the intermediate values and derivatives as they are computed at each step. All of the intermediate function values and derivatives are stored at each node, and these values are rendered at each node in the computation graph.
+
+We store a list of rendered frames internally in memory to create the animation and then use ImageIO to save the final set of frames to an animated GIF file. By repeating frames as needed in memory, we are able to pause the video at select locations such as the end of each intermediate step, and the end of the final computation step.
 
 ## License:
 
 After much consideration, we have settled on using the gnu GPLv3 license as it has allows one to do almost anything they want with the code **except** distributing closed-source versions.  Given the academic nature of this project, we feel it is best that close-source versions are not allowed.  The main purpose of this code is for people to learn from it, and we feel that having the freedom to view and modify code is a critical part of this.  
 
-## Extension:
+## Broader impact and inclusivity statement
 
-Visualization Tool - Our visualizer tool generates animated graphs of the forward mode binary tree, and displays values and derivative traces as they are evaluated step by step. It is a very useful illustration of the inner workings of automatic differentiation as it is being applied.
-
-Internally we use matplotlib to render our animations using low level primitives such as line segments, elipses, rectangles, and text.  A custom node placement engine was created to layout the nodes in a readable left to right forward, similar to how one would read text (in English).  The left to right ordering of the nodes is based on the maximum distance between the node and any of its input variables or constants.
-
-As the computation graph is traversed, the nodes are highlighted in the binary tree and animations are applied to show the computations being applied in postorder.  We show the intermediate values and derivatives as they are computed. 
-
-We store a list of frames internally in memory to create the animation and then use ImageIO to save the final set of frames to an animated GIF file.
-
-## Broader Impact and Inclusivity Statement
-
-### Broader Impact
+### Broader impact
 
 As one of the fundamental algorithms, automatic differentiation is used extensively across almost every area in science fields, ranging from physics, biology, genetics, applied mathematics, optimization, statistics, machine learning, and health science. Our goal with this software is to provide an automatic differentiation library that is easy to understand, read, and modify. We wish that our software can serve both an educational purpose and also be of practical use. We wish that through reading our code, using our software and plotting animated visualizations, potential users can understand the forward mode automatic differentiation thoroughly, and hence can better apply this algorithm in their own disciplines.
 
-### Inclusivity Statement
+### Inclusivity statement
 
 Tea-people encourage users to modify the code and experiment with various techniques. We include elaborate documentation and detailed user guide so that users new to this package will not have a difficult time navigating the functionality of our package. As we are developing this package, the pull requests are reviewed and approved by every member of our team. We also welcome users to make pull requests and provide recommendations in every aspect of this software, from implementation, code efficiency, software organization, to additional features that would be great to include. Despite this package is written in English, we are still eager to hear different opinions from users in our diverse coding community. 
 
 ## Future
 There several future features on our list which we would like to implement in the future.
 
-1. Support for arrays of variables. Even with vector functions supported, variables will need to be defined individually, i.e. `x1, x2, x3 = var('x1'), var('x2'), var('x3')...` This is quite cumbersome. We would like to add support for vectors of variables in the following manner. `x_array = var_array('x', 100)` which will generate an array of 99 variables. These can be referenced by using indices, `x[4]` to reference the 4th variable. Some applications of this include defining recursive functions, and working with finite series.
+1. Support for arrays of variables. Even with vector functions supported, variables will need to be defined individually, i.e. `x1, x2, x3 = var('x1'), var('x2'), var('x3')...` This is quite cumbersome. We would like to add support for vectors of variables in the following manner. `x_array = var_array('x', 100)` which will generate an array of 100 variables. These can be referenced by using indices, `x[4]` to reference the 5th variable (indexing starts at 0). Some applications of this include defining recursive functions, and working with finite series.
 
 2. We would like to implement a root finding algorithm using Newton's method. A function can be defined using the autodiff library, and then newton's method will solve for the roots of the given function. This will be iteratively using autodiff to efficiently compute derivatives. The lazy evaluation approach of our library lends itself quite well to a Newton solver, where the same equation (and its derivative) is evaluated over and over again.
 
-3. We would like to incorporate customizable features into our visualizer - users can adjust the colors, text, figure size, animation speed, etc. in the visualizer. This can help them present a more appealing visualization to their audience based on their needs.  
+3. We would like to incorporate customizable features into our visualizer. Users will be able to adjust the colors, text, figure size, and animation speed in the visualizer. This can help them present a more appealing visualization to their audience based on their needs.  
 
 ## References:
 
