@@ -701,4 +701,30 @@ def test_nans():
     with pytest.raises(ValueError):
         f.evaluate(x=-2)
 
+def test_seed_vector_support():
+    # test the advanced seed dictionary argument
+    x = ad.var('x')
+    y = ad.var('y')
+    f = ad.cos(x) + ad.sin(y)
+    results = f.evaluate(x=.1, y=.1, seed_dict={'x': 1, 'y': 2})
+    assert np.isclose(results['derivative']['x'], -0.0998334)
+    results = f.evaluate(x=.1, y=.1, seed_dict={'x': 0, 'y': 1})
+    assert np.isclose(results['derivative']['x'], 0.0)
+    results = f.evaluate(x=.1, y=.1, seed_dict={'x': 0.7})
+    assert np.isclose(results['derivative']['x'], -0.069883)
+    results = f.evaluate(x=.1, y=.1, seed_dict={'y': 0.7})
+    assert np.isclose(results['derivative']['y'], 0.696503)
 
+    with pytest.raises(ValueError):
+        f.evaluate(x=.1, y=.1, seed_dict={'x', 'cat'})
+
+    with pytest.raises(ValueError):
+        f.evaluate(x=.1, y=.1, seed_dict='should have a dictionary here')
+
+def test_seed_vector_invalid_type_in_dict():
+    # test the advanced seed dictionary argument
+    x = ad.var('x')
+    y = ad.var('y')
+    f = ad.cos(x) + ad.sin(y)
+    with pytest.raises(ValueError):
+        f.evaluate(x=.1, y=.1, seed_dict={'x':'cat'})
