@@ -715,6 +715,10 @@ def test_seed_vector_support():
     results = f.evaluate(x=.1, y=.1, seed_dict={'y': 0.7})
     assert np.isclose(results['derivative']['y'], 0.696503)
 
+    l = [f, x * y]
+    results = ad.evaluate(l, x = 1, y = 1, seed_dict={'x':2})
+    assert np.isclose(results[1]['derivative']['x'], 2.0)
+
     with pytest.raises(ValueError):
         f.evaluate(x=.1, y=.1, seed_dict={'x', 'cat'})
 

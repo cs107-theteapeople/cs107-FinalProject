@@ -789,7 +789,7 @@ def evaluate(nodes, **kwargs):
     if 'wrt' in kwargs:
         wrt_pre = kwargs['wrt']
     else:
-        wrt_pre = list(set(kwargs.keys()) - {'wrt'})
+        wrt_pre = list(set(kwargs.keys()) - {'wrt', 'seed_dict'})
 
     if not isinstance(wrt_pre, list):
         raise ValueError('Please supply a list of variables or strings for the wrt argument')
@@ -818,7 +818,7 @@ def evaluate(nodes, **kwargs):
     all_vars = set.union(*vars)
 
     # check to make sure our inputs match the full set of possible variables
-    supplied_vars = set(kwargs.keys()) - {'wrt'}
+    supplied_vars = set(kwargs.keys()) - {'wrt', 'seed_dict'}
     if not (supplied_vars == all_vars):
         raise ValueError('Please specify values for every variable that is present in this vector valued function, '
                          'and only variables that appear in the function.')
@@ -841,6 +841,11 @@ def evaluate(nodes, **kwargs):
         for w in wrt:
             if w in lvars:
                 supplied_wrt.append(w)
+
+        # if a seed dictionary is supplied, add this to the arguments to be passed to the
+        # evaluate member function.
+        if 'seed_dict' in kwargs:
+            var_values['seed_dict'] = kwargs['seed_dict']
 
         # evaluate the node and append our results
         results.append(node.evaluate(**var_values, wrt=supplied_wrt))
