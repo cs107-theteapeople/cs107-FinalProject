@@ -10,7 +10,7 @@ Codecov:
 
 [![codecov](https://codecov.io/gh/cs107-theteapeople/cs107-FinalProject/branch/main/graph/badge.svg?token=I1Z7BI3O7F)](https://codecov.io/gh/cs107-theteapeople/cs107-FinalProject)
 
-Our full documentation can be found at [documentation](docs/documentation.md).
+Our full documentation can be found at [here](docs/documentation.md).
 
 ## Introduction
 
@@ -20,7 +20,7 @@ This software package provides two libraries:
 1. Autodiff provides an easy-to-use library that performs automatic differentiation of one or several user-supplied functions.
 2. Visualizer visualizes and animates the automatic differentiation process of the user supplied function, so that users can have a clear understanding of the underlying algorithm and calculation processes through looking at the vivid graphs.
 
-## How to Use Autodiff
+## How to use autodiff
 
 A user will interact with the automatic differentiation functionality through the autodiff module. This module uses automatic differentiation to calculate the Jacobian of a user supplied function. 
 
@@ -49,7 +49,7 @@ with the following command.
 
 `pip install -r requirements.txt`
 
-### User Guide
+### User guide
 
 `import autodiff as ad`
 
@@ -94,9 +94,8 @@ Set user-defined composite functions that have vector valued outputs:
 
 Evaluate the function and derivative with respect to x:
   
-```
-print(ad.evaluate(f, x =.2, y =.1, wrt = [x]))
-```
+
+`ad.evaluate(f, x =.2, y =.1, wrt = [x])`
 
 This will return both the value and the derivative of this function with respect to x evaluated at the given points as a list of dictionaries. 
 
@@ -114,6 +113,22 @@ This will return both the value and the derivative of this function with respect
 
 Note the use of the `wrt` parameter argument.  This can be used to limit which derivatives are returned.  If this is not
 specified, all derivatives are returned for the function.  In this example above, it would return the derivative with respect to both x and y.
+
+### Advanced usage - seed dictionary
+
+A custom seed dictionary can be supplied to the evaluate method.  The following examples show how to use this functionality.
+
+```
+x = var('x')
+y = var('y')
+f = cos(x) + sin(y)
+f.evaluate(x=.1, y=.1, seed_dict={'x':1, 'y':2})
+f.evaluate(x=.1, y=.1, seed_dict={'x':0, 'y':1})
+f.evaluate(x=.1, y=.1, seed_dict={'x':0.7})
+f.evaluate(x=.1, y=.1, seed_dict={'y':0.7})
+```
+
+By default, if a seed value isn't supplied for a variable, it is set to 1 in that pass, meaning that the normal derivative is calculated for that variable.
 
 
 ### How to use the forward computation visualizer
@@ -160,7 +175,7 @@ Set the user-defined composite function
 Generate the animated visualization of the function evaluation processes with respect to x,y,z evaluated at x=1, y=1, and z=2:
 
 ```
-print(f.evaluate(x=1, y=1, z=2, plot='filepath/animate_demo_scalar.gif'))
+print(f.evaluate(x=1, y=1, z=2, plot='<filepath>/animate_demo_scalar.gif'))
 ```
 
 The animate_demo.gif file will be stored at the filepath the user specified in the plot argument.
@@ -169,13 +184,13 @@ The animate_demo.gif file will be stored at the filepath the user specified in t
 
 The user is able to see the forward mode evaluation process, with values and traces of derivatives being displayed at each step. 
 
-## Broader Impact and Inclusivity Statement
+## Broader impact and inclusivity statement
 
-### Broader Impact
+### Broader impact
 
 As one of the fundamental algorithms, automatic differentiation is used extensively across almost every area in science fields, ranging from physics, biology, genetics, applied mathematics, optimization, statistics, machine learning, and health science. Our goal with this software is to provide an automatic differentiation library that is easy to understand, read, and modify. We wish that our software can serve both an educational purpose and also be of practical use. We wish that through reading our code, using our software and plotting animated visualizations, potential users can understand the forward mode automatic differentiation thoroughly, and hence can better apply this algorithm in their own disciplines.
 
-### Inclusivity Statement
+### Inclusivity statement
 
 Tea-people encourage users to modify the code and experiment with various techniques. We include elaborate documentation and detailed user guide so that users new to this package will not have a difficult time navigating the functionality of our package. As we are developing this package, the pull requests are reviewed and approved by every member of our team. We also welcome users to make pull requests and provide recommendations in every aspect of this software, from implementation, code efficiency, software organization, to additional features that would be great to include. Despite this package is written in English, we are still eager to hear different opinions from users in our diverse coding community. 
 

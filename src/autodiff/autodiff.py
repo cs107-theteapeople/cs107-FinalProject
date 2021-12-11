@@ -1,6 +1,5 @@
-# autodiff
+# AutoDiff
 # AC207 final project
-# Fall 2021
 
 # the visualization extension
 from autodiff import visualizer
@@ -10,10 +9,11 @@ import numpy as np
 import imageio
 import warnings
 
+
 # this is a closure that allows to define a new function
 # that can be used with autodiff
 # for each function, a primary function and its derivative is supplied
-def get_function( function_name, function , derivative ):
+def get_function(function_name, function, derivative):
     """This is a closure that generates the necessary
       function to do node insertions into a binary graph
       and set up the necessary valuation and derivative
@@ -34,17 +34,18 @@ def get_function( function_name, function , derivative ):
                     to perform the chain rule for the computation
                     of our derivative.
     """
+
     # generate the function that can be used to elementary mathematical functions
-    def inner_function( item, other_item = None ):
+    def inner_function(item, other_item=None):
         """This inner function is what is generated
            and returned through the closure.  This inner function
            is responsible for generating the necessary binary tree
            insertions and storing the required functions for computing
            the function values and the derivatives
 
-              arguments:
-              item -- This is the left node or numeric value (both are supported)
-              other_item -- This is the right node or numeric value
+           arguments:
+           item -- This is the left node or numeric value (both are supported)
+           other_item -- This is the right node or numeric value
         """
         new_node = Node(None, None, function, derivative, function_name)
         # we support Node objects or numeric values
@@ -63,8 +64,10 @@ def get_function( function_name, function , derivative ):
                 new_node.right = Node(value=other_item)
 
         return new_node
+
     # return the inner function
     return inner_function
+
 
 # this is a helper function that creates a variable node
 def var(var_name):
@@ -74,6 +77,7 @@ def var(var_name):
             var_name -- This is the name of the variable to create
       """
     return Node(var_name=var_name)
+
 
 # this is a helper function that creates a constant
 # with operator overloading, this is not needed
@@ -95,25 +99,26 @@ def const(value):
 # each function can now be defined in a single line
 # for each function, we supply the primary function and its derivative
 # lambda functions can be used here
-sin = get_function('sin', np.sin,   lambda x,xp : xp * np.cos(x))
-cos = get_function('cos', np.cos,   lambda x,xp : -xp * np.sin(x))
-exp = get_function('exp', np.exp,   lambda x,xp : xp * np.exp(x))
-tan = get_function('tan', np.tan,   lambda x,xp : xp * (1/np.cos(x))**2)
-add = get_function('add', lambda x,y: x+y, lambda x,y,xp,yp: xp + yp)
+sin = get_function('sin', np.sin, lambda x, xp: xp * np.cos(x))
+cos = get_function('cos', np.cos, lambda x, xp: -xp * np.sin(x))
+exp = get_function('exp', np.exp, lambda x, xp: xp * np.exp(x))
+tan = get_function('tan', np.tan, lambda x, xp: xp * (1 / np.cos(x)) ** 2)
+add = get_function('add', lambda x, y: x + y, lambda x, y, xp, yp: xp + yp)
 
 # compute the log to any base (the second argument is the base)
-log = get_function('log', lambda x,y: np.log(x) / np.log(y), lambda x,y,xp,yp:
-                            (xp*np.log(y)/x - (np.log(x)*yp/y)) / (np.log(y)**2))
-ln =  get_function('ln',  lambda x : np.log(x), lambda x,xp: xp/x)
-arcsin = get_function('arcsin', lambda x: np.arcsin(x), lambda x,xp: xp / (np.sqrt( 1 - x**2 )))
-arccos = get_function('arccos', lambda x: np.arccos(x), lambda x,xp: - xp / (np.sqrt( 1 - x**2)))
-arctan = get_function('arctan', lambda x: np.arctan(x), lambda x,xp: xp / (x**2 + 1))
+log = get_function('log', lambda x, y: np.log(x) / np.log(y), lambda x, y, xp, yp:
+(xp * np.log(y) / x - (np.log(x) * yp / y)) / (np.log(y) ** 2))
+ln = get_function('ln', lambda x: np.log(x), lambda x, xp: xp / x)
+arcsin = get_function('arcsin', lambda x: np.arcsin(x), lambda x, xp: xp / (np.sqrt(1 - x ** 2)))
+arccos = get_function('arccos', lambda x: np.arccos(x), lambda x, xp: - xp / (np.sqrt(1 - x ** 2)))
+arctan = get_function('arctan', lambda x: np.arctan(x), lambda x, xp: xp / (x ** 2 + 1))
 sinh = get_function('sinh', lambda x: np.sinh(x), lambda x, xp: xp * np.cosh(x))
 cosh = get_function('cosh', lambda x: np.cosh(x), lambda x, xp: xp * np.sinh(x))
-tanh = get_function('tanh', lambda x: np.tanh(x), lambda x, xp: xp * (1 / np.cosh(x))**2)
+tanh = get_function('tanh', lambda x: np.tanh(x), lambda x, xp: xp * (1 / np.cosh(x)) ** 2)
 logistic = get_function('logistic', lambda x: np.exp(x) / (1 + np.exp(x)), lambda x, xp:
-                        np.exp(x) * xp / ((1 + np.exp(x)) ** 2))
+np.exp(x) * xp / ((1 + np.exp(x)) ** 2))
 sqrt = get_function('sqrt', lambda x: np.sqrt(x), lambda x, xp: xp / (2 * np.sqrt(x)))
+
 
 # here is our main class
 # this class defines a node of a binary tree
@@ -132,6 +137,7 @@ class Node:
     These nodes form a recursive binary tree that is used to perform the computations
     of the primary and forward traces.
     """
+
     # initialize the node
     # we set the node type based on the properties that were passed in
     # we set the nodes left and right children to None
@@ -145,6 +151,7 @@ class Node:
             value -- the value of this node if it is a constant
             function -- the function to use for computing the value of the function
             derivative -- the function to use for computing the derivative of the function
+            function_name -- the name of the function used for rendering
         """
 
         self.var_name = var_name
@@ -193,13 +200,20 @@ class Node:
         else:
             plot = False
 
+        if 'seed_dict' in kwargs:
+            seed_dict = kwargs['seed_dict']
+            if not isinstance(seed_dict, dict):
+                raise ValueError('Please specify a dictionary for the seed_dict argument')
+        else:
+            seed_dict = None
+
         vars = set()
         # the first thing we do is determine what variables are defined in
         # our tree
         Node.get_variables(self, vars)
 
         # we remove the keywords from the set of supplied variables
-        supplied_vars = set(kwargs.keys()) - {'wrt', 'plot'}
+        supplied_vars = set(kwargs.keys()) - {'wrt', 'plot', 'seed_dict'}
 
         if 'wrt' in kwargs:
 
@@ -212,7 +226,6 @@ class Node:
                 raise ValueError('Incorrect type supplied to wrt. '
                                  'Please supply a list of variables or strings of variable names')
             wrt = []
-
 
             for item in wrt_pre:
                 if not (isinstance(item, Node) or isinstance(item, str)):
@@ -237,10 +250,10 @@ class Node:
 
         # if the variables do not match, raise an error
         if supplied_vars != vars:
-            print ('variables do not match')
-            print (f'the variables in this tree are {vars}')
+            print('variables do not match')
+            print(f'the variables in this tree are {vars}')
 
-            print (f'the variables supplied by evaluate are {supplied_vars}')
+            print(f'the variables supplied by evaluate are {supplied_vars}')
             raise ValueError('Supplied variables do not match those in the equation.')
 
         # let's reset the values and derivatives in the tree
@@ -252,23 +265,22 @@ class Node:
             # add the depths and an order of the nodes for plotting
             image, fig, font_size, depth_counts = visualizer.render_first_frame(self)
             images = [image]
-            Node.eval_post(self, kwargs, wrt, images, self, fig, font_size, depth_counts)
+            Node.eval_post(self, kwargs, wrt, images, self, fig, font_size, depth_counts, seed_dict = seed_dict)
             file_path = plot
             print()
             # pause the video a bit at the end
             for i in range(6):
                 images.append(images[-1])
 
-            print (f'saving render to {file_path}')
+            print(f'saving render to {file_path}')
             imageio.mimsave(file_path, images, fps=2, format='GIF')
-            print ()
+            print()
 
         else:
-            Node.eval_post(self, kwargs, wrt)
+            Node.eval_post(self, kwargs, wrt, seed_dict = seed_dict)
 
         # return the value and the derivative
         return {'value': self.value, 'derivative': self.deriv}
-
 
     # this is the multiplication operator overload
     def __mul__(self, other):
@@ -280,7 +292,7 @@ class Node:
         """
         # we apply the multiplication function to these two nodes
         new_node = Node(None, None, np.multiply,
-                        lambda x,y,xp,yp: x*yp + y*xp, 'x')
+                        lambda x, y, xp, yp: x * yp + y * xp, 'x')
         # set the child nodes
         new_node.left = self
         if isinstance(other, Node):
@@ -298,8 +310,8 @@ class Node:
            other -- the other node or numeric value (both are supported)
            """
         # we apply the division function to these two nodes
-        new_node = Node(None, None, lambda x,y: x/y,
-                        lambda x,y,xp,yp: ((y * xp - x * yp) / (y**2)), '/')
+        new_node = Node(None, None, lambda x, y: x / y,
+                        lambda x, y, xp, yp: ((y * xp - x * yp) / (y ** 2)), '/')
         # set the child nodes
         new_node.left = self
         if isinstance(other, Node):
@@ -317,8 +329,8 @@ class Node:
            other -- the other node or numeric value (both are supported)
            """
         # we apply the divide function in reverse order
-        new_node = Node(None, None, lambda x,y: y/x,
-                        lambda x,y,xp,yp: ((x * yp - y * xp) / (x**2)), '/')
+        new_node = Node(None, None, lambda x, y: y / x,
+                        lambda x, y, xp, yp: ((x * yp - y * xp) / (x ** 2)), '/')
         # set the child nodes
         new_node.left = self
         new_node.right = Node(value=other)
@@ -345,7 +357,7 @@ class Node:
            other -- the other node or numeric value (both are supported)
            """
         # we apply the add function to these two nodes
-        new_node = Node(None, None, np.add, lambda x,y,xp,yp: xp + yp, '+' )
+        new_node = Node(None, None, np.add, lambda x, y, xp, yp: xp + yp, '+')
         new_node.left = self
         if isinstance(other, Node):
             new_node.right = other
@@ -375,7 +387,7 @@ class Node:
            other -- the other node or numeric value (both are supported)
            """
         # we apply the add function to these two nodes
-        new_node = Node(None, None, np.subtract, lambda x,y,xp,yp: xp - yp, '-' )
+        new_node = Node(None, None, np.subtract, lambda x, y, xp, yp: xp - yp, '-')
         new_node.left = self
         if isinstance(other, Node):
             new_node.right = other
@@ -393,7 +405,7 @@ class Node:
            other -- the other node or numeric value (both are supported)
            """
         # we apply the add function to these two nodes
-        new_node = Node(None, None, lambda x,y: y-x, lambda x,y,xp,yp: yp - xp, '-')
+        new_node = Node(None, None, lambda x, y: y - x, lambda x, y, xp, yp: yp - xp, '-')
         new_node.left = self
         new_node.right = Node(value=other)
 
@@ -417,13 +429,13 @@ class Node:
         if np.isclose(x, 0) or np.isclose(yp, 0):
             return (x ** (y - 1)) * (y * xp)
         elif x < 0:
-             raise ValueError('The derivative of a negative value raised to the specified power does not exist')
+            raise ValueError('The derivative of a negative value raised to the specified power does not exist')
 
         else:
             return (x ** (y - 1)) * (y * xp + x * np.log(x) * yp)
 
     @staticmethod
-    def _power_func(x,y):
+    def _power_func(x, y):
         """Since computing the powers of numbers has special cases that result
         in complex numbers, we create a special function here for this.
 
@@ -479,12 +491,12 @@ class Node:
     def __lt__(self, other):
         """This function overloads the less than operator
 
-               arguments:
-               self -- the current node
-               other -- the other node or numeric value (both are supported)
-               """
+        arguments:
+        self -- the current node
+        other -- the other node or numeric value (both are supported)
+        """
         # we apply the add function to these two nodes
-        new_node = Node(None, None, lambda x,y: int(x < y), lambda x, y, xp, yp: 0, '<')
+        new_node = Node(None, None, lambda x, y: int(x < y), lambda x, y, xp, yp: 0, '<')
         new_node.left = self
         if isinstance(other, Node):
             new_node.right = other
@@ -496,10 +508,10 @@ class Node:
     def __gt__(self, other):
         """This function overloads the greater than operator
 
-               arguments:
-               self -- the current node
-               other -- the other node or numeric value (both are supported)
-               """
+        arguments:
+        self -- the current node
+        other -- the other node or numeric value (both are supported)
+        """
         # we apply the add function to these two nodes
         new_node = Node(None, None, lambda x, y: int(x > y), lambda x, y, xp, yp: 0, '>')
         new_node.left = self
@@ -513,12 +525,12 @@ class Node:
     def __le__(self, other):
         """This function overloads the less than or equal operator
 
-               arguments:
-               self -- the current node
-               other -- the other node or numeric value (both are supported)
-               """
+        arguments:
+        self -- the current node
+        other -- the other node or numeric value (both are supported)
+        """
         # we apply the add function to these two nodes
-        new_node = Node(None, None, lambda x,y: int(x <= y), lambda x, y, xp, yp: 0, '<=')
+        new_node = Node(None, None, lambda x, y: int(x <= y), lambda x, y, xp, yp: 0, '<=')
         new_node.left = self
         if isinstance(other, Node):
             new_node.right = other
@@ -530,10 +542,10 @@ class Node:
     def __ge__(self, other):
         """This function overloads the greater than or equal operator
 
-               arguments:
-               self -- the current node
-               other -- the other node or numeric value (both are supported)
-               """
+        arguments:
+        self -- the current node
+        other -- the other node or numeric value (both are supported)
+        """
         # we apply the add function to these two nodes
         new_node = Node(None, None, lambda x, y: int(x >= y), lambda x, y, xp, yp: 0, '>=')
         new_node.left = self
@@ -562,7 +574,7 @@ class Node:
         self -- the current node
         """
         new_node = Node(None, None, lambda x: -x,
-                        lambda x,xp: -xp, 'negation')
+                        lambda x, xp: -xp, 'negation')
 
         new_node.left = self
         return new_node
@@ -576,14 +588,14 @@ class Node:
 
         if self.type == 'inter':
             rv = f'[type:{self.type} ' \
-                f'value:{self.value} ' \
-                f'function:{self.function.__name__} ' \
-                f'depth:{self.depth} ' \
-                f'order:{self.order}]'
+                 f'value:{self.value} ' \
+                 f'function:{self.function.__name__} ' \
+                 f'depth:{self.depth} ' \
+                 f'order:{self.order}]'
         else:
             rv = f' (type:{self.type} name:{self.var_name} ' \
-                f'value:{self.value} ' \
-                f'order:{self.order}) '
+                 f'value:{self.value} ' \
+                 f'order:{self.order}) '
         return rv
 
     # print the binary tree in preorder
@@ -594,7 +606,6 @@ class Node:
 
         arguments:
         self -- the current node
-        other -- the other node or numeric value (both are supported)
         """
         self.print_preorder(self)
 
@@ -627,14 +638,13 @@ class Node:
             Node.get_variables(root.left, vars)
             Node.get_variables(root.right, vars)
 
-
     # print the tree in preorder recursively
     @staticmethod
     def print_preorder(root):
         """This prints the binary tree in preorder starting at the given root node
 
         arguments:
-        self -- the current node
+        root - the node to print
         """
         if root:
             print(root)
@@ -657,20 +667,19 @@ class Node:
         This function is called recursively to traverse the tree
 
         arguments:
-        root -- the node to start on
+        root -- the node to print
         """
         if root:
             Node.print_postorder(root.left)
             Node.print_postorder(root.right)
             print(root)
 
-
     # this function traverses the tree in postorder and
     # computes the primary and tangent traces
     # keeping track of both the value and the derivative
     @staticmethod
-    def eval_post(root, var_values, wrt, images = None, root_render = None,
-                  fig = None, font_size = None, depth_counts = None):
+    def eval_post(root, var_values, wrt, images=None, root_render=None,
+                  fig=None, font_size=None, depth_counts=None, seed_dict=None):
         """This our primary recursive computation engine for lazy evaluation.
         Our binary tree is traversed and the primary and tangent traces are updated
         in postorder.  All of the existing symbolic variables are substituted with
@@ -680,10 +689,20 @@ class Node:
         arguments:
         root -- the current node
         var_values -- the list of variable values supplied to the call to eval
+        wrt -- a list of variables to compute the derivatives for.  To compute the entire gradient,
+               exclude this argument
+        images -- optionally specify the internal list of images used for rendering
+        root_render -- the root node of the tree used for rendering
+        fig -- the current matplotlib figure
+        font_size -- this is used internally to store the font size of the render
+        depth_counts -- used internally by the visualization engine to determine the layouts of the nodes
+        seed_dict -- for more advanced usage, optionally specify a seed dictionary to use
         """
         if root:
-            Node.eval_post(root.left, var_values, wrt, images, root_render, fig, font_size, depth_counts)
-            Node.eval_post(root.right, var_values, wrt, images, root_render, fig, font_size, depth_counts)
+            Node.eval_post(root.left, var_values, wrt, images, root_render, fig, font_size,
+                           depth_counts, seed_dict=seed_dict)
+            Node.eval_post(root.right, var_values, wrt, images, root_render, fig, font_size,
+                           depth_counts, seed_dict=seed_dict)
             # if a function is attached to this node, we apply it to the
             # children
             # this works similar to activation functions in neural networks
@@ -723,7 +742,13 @@ class Node:
                 root.deriv = {}
                 for key in wrt:
                     if key == root.var_name:
-                        root.deriv[key] = 1
+                        if seed_dict and key in seed_dict:
+                            if (isinstance(seed_dict[key], int) or isinstance(seed_dict[key], float)):
+                                root.deriv[key] = seed_dict[key]
+                            else:
+                                raise ValueError('Invalid type passed into the seed dictionary.')
+                        else:
+                            root.deriv[key] = 1
                     else:
                         root.deriv[key] = 0
 
@@ -737,10 +762,19 @@ class Node:
             if images:
                 images.extend(visualizer.frame(root_render, fig, font_size, depth_counts, root))
 
+
 # this our main function to evaluate functions with vector outputs
 # for each output, we call the eval method of that node
 # to use the visualizer on a particular output, run the eval member function on that node
-def evaluate( nodes , **kwargs):
+def evaluate(nodes, **kwargs):
+    """This function allows one to evaluate vector valued functions by supplying a list of nodes.  Each node in the
+       list corresponds to each scalar output of our function.
+
+       arguments:
+       nodes -- a list of nodes to evaluate
+       kwargs -- here the values of the variables can be specified and the wrt argument can be included to only
+                 compute a select set of derivatives.
+       """
     if not (isinstance(nodes, list) or isinstance(nodes, Node)):
         raise ValueError('Please specify a node or list of nodes as the first argument to eval')
 
@@ -755,7 +789,7 @@ def evaluate( nodes , **kwargs):
     if 'wrt' in kwargs:
         wrt_pre = kwargs['wrt']
     else:
-        wrt_pre = list(set(kwargs.keys()) - {'wrt'})
+        wrt_pre = list(set(kwargs.keys()) - {'wrt', 'seed_dict'})
 
     if not isinstance(wrt_pre, list):
         raise ValueError('Please supply a list of variables or strings for the wrt argument')
@@ -784,7 +818,7 @@ def evaluate( nodes , **kwargs):
     all_vars = set.union(*vars)
 
     # check to make sure our inputs match the full set of possible variables
-    supplied_vars = set(kwargs.keys()) - {'wrt'}
+    supplied_vars = set(kwargs.keys()) - {'wrt', 'seed_dict'}
     if not (supplied_vars == all_vars):
         raise ValueError('Please specify values for every variable that is present in this vector valued function, '
                          'and only variables that appear in the function.')
@@ -808,8 +842,12 @@ def evaluate( nodes , **kwargs):
             if w in lvars:
                 supplied_wrt.append(w)
 
+        # if a seed dictionary is supplied, add this to the arguments to be passed to the
+        # evaluate member function.
+        if 'seed_dict' in kwargs:
+            var_values['seed_dict'] = kwargs['seed_dict']
+
         # evaluate the node and append our results
-        results.append(node.evaluate( **var_values, wrt = supplied_wrt))
+        results.append(node.evaluate(**var_values, wrt=supplied_wrt))
 
     return results
-
