@@ -121,7 +121,7 @@ A custom seed dictionary can be supplied to the evaluate method instead of suppl
 ```
 x = var('x')
 y = var('y')
-f = cos(x) + sin(y)
+f = ad.cos(x) + ad.sin(y)
 f.evaluate(x=.1, y=.1, seed_dict={'x':1, 'y':1})
 f.evaluate(x=.1, y=.1, seed_dict={'x':0, 'y':1})
 ```
