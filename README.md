@@ -116,19 +116,17 @@ specified, all derivatives are returned for the function.  In this example above
 
 ### Advanced usage - seed dictionary
 
-A custom seed dictionary can be supplied to the evaluate method.  The following examples show how to use this functionality.
+A custom seed dictionary can be supplied to the evaluate method instead of supplying variables to the wrt argument.  The following examples show how to use this functionality.
 
 ```
 x = var('x')
 y = var('y')
 f = cos(x) + sin(y)
-f.evaluate(x=.1, y=.1, seed_dict={'x':1, 'y':2})
+f.evaluate(x=.1, y=.1, seed_dict={'x':1, 'y':1})
 f.evaluate(x=.1, y=.1, seed_dict={'x':0, 'y':1})
-f.evaluate(x=.1, y=.1, seed_dict={'x':0.7})
-f.evaluate(x=.1, y=.1, seed_dict={'y':0.7})
 ```
 
-By default, if a seed value isn't supplied for a variable, it is set to 1 in that pass, meaning that the normal derivative is calculated for that variable.
+By default, if a seed value isn't supplied for a variable, it is set to 1 in that pass, meaning that the normal derivative is calculated for that variable. Note that each derivative is computed individually, and this seed dictionary applies a scale to that derivative.  For example, using a seed dictionary of `{'x':1, 'y':1}` will compute the derivatives as normal, but using a seed dictionary of `{'x':1, 'y':0}` will set the y derivative to 0.  This is very different from the seed **vector** used in class. Also, unlike the `wrt` argument, this will set the derivatives to 0 and still return them.  The `wrt` argument is used to only return a subset of the derivatives. 
 
 
 ### How to use the forward computation visualizer
