@@ -119,8 +119,8 @@ specified, all derivatives are returned for the function.  In this example above
 A custom seed dictionary can be supplied to the evaluate method instead of supplying variables to the wrt argument.  The following examples show how to use this functionality.
 
 ```
-x = var('x')
-y = var('y')
+x = ad.var('x')
+y = ad.var('y')
 f = ad.cos(x) + ad.sin(y)
 f.evaluate(x=.1, y=.1, seed_dict={'x':1, 'y':1})
 f.evaluate(x=.1, y=.1, seed_dict={'x':0, 'y':1})
